@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+ </head>
+ <body>
+  <div class="container">
+   <div class="header">
+    <h3 class="text-muted">Uploaded files</h3>
+   </div>
+   <hr/>
+   <div>
+   This is a list of the files you just uploaded, click on them to download them
+   <ul>
+    {% for file in filenames %}
+     <li><a href="{{url_for('uploaded_file', filename=file)}}">{{file}}</a></li>
+    {% endfor %}
+   </ul>
+   </div>
+   <div class="header">
+    <h3 class="text-muted">Generate sql loader and verification scripts</h3>
+    <form id="form1" method="post" action="generatescript" enctype="multipart/form-data">
+        <div>
+            <input type="submit" value="Generate Scripts"></input>
+        </div>
+    </form>
+   </div>
+   <hr/>
+<pre>
+
+</pre>
+   </div>
+  </div>
+ </body>
+</html>
