@@ -4,7 +4,7 @@
 __author__ = 'Owen_Study/owen_study@126.com'
 
 import openpyxl,re
-import common
+from app import common
 
 '''从excel加载template'''
 

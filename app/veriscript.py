@@ -4,7 +4,7 @@
 __author__ = 'Owen_Study/owen_study@126.com'
 
 import re,os
-import template, configure
+from  app import template, configure
 
 ''' 传入mapping column list列表'''
 class TemplateScript(object):
@@ -253,8 +253,8 @@ class TemplateScript(object):
     '''清除已经生成的sqlldr加载文件'''
     def clear_sqlldr_file(self):
         try:
-            sqlldr_win_file_name='./sqlldr/01loadingdata.bat'
-            sqlldr_linux_file_name ='./sqlldr/01loadingdata.sh'
+            sqlldr_win_file_name=os.path.join(configure.SQLLDR_FOLDER,'01loadingdata.bat')
+            sqlldr_linux_file_name =os.path.join(configure.SQLLDR_FOLDER,'01loadingdata.sh')
             if os.path.exists(sqlldr_win_file_name):
                 os.remove(sqlldr_win_file_name)
             if os.path.exists(sqlldr_linux_file_name):
@@ -266,14 +266,14 @@ class TemplateScript(object):
         # windows
         nls_lang_format='{0} NLS_LANG={1}\n'
         default_lang='AMERICAN_AMERICA.ZHS16GBK'
-        file_name_format='./sqlldr/01loadingdata.{0}'
+        file_name_format=os.path.join(configure.SQLLDR_FOLDER,'01loadingdata.{0}')
         # 创建两个目录存放bad&log
-        if os.path.exists('./sqlldr/bad/') is False:
-            os.mkdir('./sqlldr/bad/')
-        if os.path.exists('./sqlldr/log/') is False:
-            os.mkdir('./sqlldr/log/')
-        if os.path.exists('./sqlldr/datafiles/') is False:
-            os.mkdir('./sqlldr/datafiles/')
+        if os.path.exists(configure.SQLLDR_BAD_FOLDER) is False:
+            os.mkdir(configure.SQLLDR_BAD_FOLDER)
+        if os.path.exists(configure.SQLLDR_LOG_FOLDER) is False:
+            os.mkdir(configure.SQLLDR_LOG_FOLDER)
+        if os.path.exists(configure.SQLLDR_CONTROL_FOLDER) is False:
+            os.mkdir(configure.SQLLDR_CONTROL_FOLDER)
         if os_type == 'win':
             file_name = file_name_format.format('bat')
             remark_str = '--'
@@ -306,11 +306,11 @@ class TemplateScript(object):
     def gen_control_files(self, file_ext_name = 'txt', column_split = '|', nls_lang = 'AMERICAN_AMERICA.ZHS16GBK'):
         sqlldr_scripts = ''
         # 创建sqlldr目录存放所有的加载相关的文件
-        if os.path.exists('./sqlldr/') is False:
-            os.mkdir('./sqlldr/')
+        if os.path.exists(configure.SQLLDR_FOLDER) is False:
+            os.mkdir(configure.SQLLDR_FOLDER)
         # 创建controlfiles保存所有的控件文件
-        if os.path.exists('./sqlldr/controlfiles/') is False:
-            os.mkdir('./sqlldr/controlfiles/')
+        if os.path.exists(configure.SQLLDR_CONTROL_FOLDER) is False:
+            os.mkdir(configure.SQLLDR_CONTROL_FOLDER)
         # sqlldr $USR_target/$PWD_target DIRECT=Y ROWS=50000 COLUMNARRAYROWS=50000 CONTROL=li_pln.ctl BAD=li_pln.bad LOG=li_pln.log
         for table_name in self.__table_list:
             one_column_list_format = '{0} \"TRIM(:{1})\",\n'
@@ -330,9 +330,9 @@ class TemplateScript(object):
             else:
                 lower_table_name=table_name.lower()
             # 每个表生成一个文件
-            control_file_content=self.__create_control_file(newtable_name, './datafiles/'+lower_table_name, all_column_list, column_split)
+            control_file_content=self.__create_control_file(newtable_name, configure.SQLLDR_CONTROL_FOLDER+lower_table_name, all_column_list, column_split)
             # 保存到文件中
-            control_file_name= './sqlldr/controlfiles/' + lower_table_name+'.ctl'
+            control_file_name= configure.SQLLDR_CONTROL_FOLDER + lower_table_name+'.ctl'
             control_file=open(control_file_name, 'w')
             control_file.write(control_file_content)
             control_file.close()
@@ -593,7 +593,7 @@ class TemplateScript(object):
 if __name__=='__main__':
 
 
-    script=TemplateScript('./templates/UAL_Mapping_ILP_Basic_V0.43.xlsx')
+    script=TemplateScript('./uploads/UAL_Mapping_Party_V0.2.9.xlsx')
 
     # script.get_unique_sql('ilp','DM_CONTRACT_INVEST_RATE','item_id,account_code,prem_type')
     script.clear_sqlldr_file()

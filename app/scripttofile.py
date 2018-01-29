@@ -3,12 +3,12 @@
 
 __author__ = 'Owen_Study/owen_study@126.com'
 import os, traceback
-import veriscript, configure
+from app import veriscript, configure
 
 '''把脚本生成到脚本文件中'''
 # 创建的表是不是需要数据类型，默认为不需要，生成一个统计的类型长度
 def generate_all_scripts(need_data_type = False):
-    file_path='./uploads/'
+    file_path=configure.SQLLDR_TEMPLATES_FOLDER
     all_templates_file=os.listdir(file_path)
     #公共函数生成的标志
     public_function_generated=False

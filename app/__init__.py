@@ -8,14 +8,15 @@
 # @Software: PyCharm
 # ===============================================
 import os
-from flask_login import LoginManager
-from flask_openid import OpenID
-from config import basedir
+# from flask_login import LoginManager
+# from flask_openid import OpenID
+# from app.configure import basedir
 
 from flask import Flask
 # 应用总的调用接口变量
-app = Flask(__name__)
-app.config.from_object('config')
+appserver = Flask(__name__)
+# print(__name__)
+appserver.config.from_object('app.configure')
 
 # 用户登录
 # lm = LoginManager()
@@ -23,10 +24,11 @@ app.config.from_object('config')
 # lm.login_view = 'login'
 # oid = OpenID(app, os.path.join(basedir, 'tmp'))
 
-from flask_sqlalchemy import SQLAlchemy
-db = SQLAlchemy(app)
+# from flask_sqlalchemy import SQLAlchemy
+# db = SQLAlchemy(app)
 
-from app import views, configure
+from app import views
+
 
 if __name__ == '__main__':
     pass
