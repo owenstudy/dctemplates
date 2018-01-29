@@ -8,9 +8,16 @@ create_table_configure = {"real_data_type": False, "table_prefix":""}
 
 import os
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+print(BASE_DIR)
 # 在外部运行时需要把APP_MAIN_FOLDER设置为AP主目录
 APP_MAIN_FOLDER = BASE_DIR
-SQLLDR_FOLDER = os.path.join(APP_MAIN_FOLDER,'sqlldr/')
+# 下载文件目录
+DOWNLOAD_FOLDER = os.path.join(APP_MAIN_FOLDER,'downloads/')
+# 上传文件目录
+UPLOADS_FOLDER = os.path.join(APP_MAIN_FOLDER, 'uploads/')
+
+SQLLDR_FOLDER = os.path.join(DOWNLOAD_FOLDER,'sqlldr/')
+# SQLLDR_FOLDER = os.path.join(APP_MAIN_FOLDER,'sqlldr/')
 SQLLDR_LOG_FOLDER = os.path.join(SQLLDR_FOLDER,'log/')
 SQLLDR_BAD_FOLDER = os.path.join(SQLLDR_FOLDER,'bad/')
 SQLLDR_CONTROL_FOLDER = os.path.join(SQLLDR_FOLDER,'control/')

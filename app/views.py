@@ -18,9 +18,11 @@ from app import configure
 # This is the path to the upload directory
 if os.path.exists(configure.SQLLDR_TEMPLATES_FOLDER) is False:
     os.mkdir(configure.SQLLDR_TEMPLATES_FOLDER)
-appserver.config['UPLOAD_FOLDER'] = os.path.join(appserver.config['BASE_DIR'],'uploads/')
-# appserver.config['SQLLDR_FOLDER'] = configure.SQLLDR_FOLDER
-appserver.config['DOWNLOAD_FOLDER'] = configure.BASE_DIR
+if os.path.exists(configure.DOWNLOAD_FOLDER) is False:
+    os.mkdir(configure.DOWNLOAD_FOLDER)
+
+appserver.config['UPLOAD_FOLDER'] = configure.UPLOADS_FOLDER
+appserver.config['DOWNLOAD_FOLDER'] = configure.DOWNLOAD_FOLDER
 # These are the extension that we are accepting to be uploaded
 appserver.config['ALLOWED_EXTENSIONS'] = set(['xlsx'])
 
