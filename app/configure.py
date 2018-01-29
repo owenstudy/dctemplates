@@ -17,4 +17,6 @@ SQLLDR_CONTROL_FOLDER = os.path.join(SQLLDR_FOLDER,'control/')
 SQLLDR_DATAFILE_FOLDER = os.path.join(SQLLDR_FOLDER,'datafiles/')
 SQLLDR_TEMPLATES_FOLDER = os.path.join(APP_MAIN_FOLDER, 'uploads/')
 
+
+
 # print(basedir)

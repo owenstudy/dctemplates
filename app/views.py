@@ -16,6 +16,8 @@ from app import configure
 # Initialize the Flask application
 # app = Flask(__name__)
 # This is the path to the upload directory
+if os.path.exists(configure.SQLLDR_TEMPLATES_FOLDER) is False:
+    os.mkdir(configure.SQLLDR_TEMPLATES_FOLDER)
 appserver.config['UPLOAD_FOLDER'] = os.path.join(appserver.config['BASE_DIR'],'uploads/')
 # appserver.config['SQLLDR_FOLDER'] = configure.SQLLDR_FOLDER
 appserver.config['DOWNLOAD_FOLDER'] = configure.BASE_DIR
