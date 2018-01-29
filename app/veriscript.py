@@ -13,7 +13,10 @@ class TemplateScript(object):
         self.__mapping_column_list=mapping_template.get_mapping_cols()
         #所有的template 表名
         self.__table_list=self.__get_table_list()
-        self.__module_name = mapping_file_name
+        # 移除掉模块名中的路径信息
+        module_name = os.path.split(mapping_file_name)[1]
+
+        self.__module_name = module_name
         #date format
         self.__date_format='yyyy/mm/dd'
         #保存公用的Sql

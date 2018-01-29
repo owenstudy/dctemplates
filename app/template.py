@@ -3,7 +3,7 @@
 
 __author__ = 'Owen_Study/owen_study@126.com'
 
-import openpyxl,re
+import openpyxl,re, os
 from app import common
 
 '''从excel加载template'''
@@ -59,7 +59,9 @@ class Template(object):
                         # print('stop')
                     #print(cell_value)
             if len(cell_value)>0:
-                cell_value['moduleName']=self.__file_name
+                # 去除文件名的路径信息
+                module_name = os.path.split(self.__file_name)[1]
+                cell_value['moduleName']=module_name
                 cellobj=common.JSONObject(cell_value)
                 mapping_rows.append(cellobj)
         return mapping_rows
