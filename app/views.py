@@ -63,7 +63,11 @@ def upload():
             # Redirect the user to the uploaded_file route, which
             # will basicaly show on the browser the uploaded file
     # Load an html page with a link to each uploaded file
-    return render_template('upload.html', filenames=filenames)
+    file_name_ext_list = ['*.csv','*.txt','*.dat']
+    terminated_by_list = [',','TAB']
+    enclosed_by_list = ['"','|']
+    return render_template('upload.html', filenames=filenames, \
+                           file_name_ext_list=file_name_ext_list, terminated_by_list=terminated_by_list, enclosed_by_list=enclosed_by_list)
 
 
 # This route is expecting a parameter containing the name

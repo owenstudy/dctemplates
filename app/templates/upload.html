@@ -1,7 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/html">
  <head>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="https://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
  </head>
  <body>
   <div class="container">
@@ -17,6 +19,36 @@
     {% endfor %}
    </ul>
    </div>
+   <hr/>
+    <div class="header">
+    <h3 class="text-muted">Script configure options</h3>
+   </div>
+   <hr/>
+      <div class="row">
+          <label>Data File Extention Name</label>
+            {% for extname in file_name_ext_list %}
+              <label class="radio-inline col-sg-2">
+                    <input type="radio" name="file_name_ext"  value="option1" >  {{extname}}
+              </label>
+            {% endfor %}
+      </div>
+      <div class="row">
+          <label>Data Column Seperator </label>
+            {% for terminated_by in terminated_by_list %}
+                <label class="radio-inline col-sg-2">
+                    <input type="radio" name="terminated_by"  value="option1" >  {{terminated_by}}
+                </label>
+            {% endfor %}
+          <label>Enclosed By </label>
+            {% for enclosed_by in enclosed_by_list %}
+                 <label class="radio-inline col-sg-3">
+                    <input type="radio" name="terminated_by"  value="option1" >  {{enclosed_by}}
+                 </label>
+            {% endfor %}
+      </div>
+      <div class="row">
+      </div>
+   <hr/>
    <div class="header">
     <h3 class="text-muted">Generate sql loader and verification scripts</h3>
     <form id="form1" method="post" action="generatescript" enctype="multipart/form-data">
@@ -26,10 +58,7 @@
     </form>
    </div>
    <hr/>
-<pre>
 
-</pre>
    </div>
-  </div>
  </body>
 </html>
