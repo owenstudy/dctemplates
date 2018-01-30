@@ -240,7 +240,8 @@ class TemplateScript(object):
         sqlldr_config_terminated_by = configure.sqlloader_configure.get('terminated_by', ',')
         sqlldr_config_enclosed_by = configure.sqlloader_configure.get('enclosed_by', '"')
         sqlldr_config_nls_lang = configure.sqlloader_configure.get('nls_lang', "AMERICAN_AMERICA.ZHS16GBK")
-
+        # print(configure.sqlloader_configure)
+        # TODO 增加文件名大小写的参数配置
         control_file_format='load data \n'+\
                         "infile '{0}'\n"+\
                         "{4} into table {1}\n"+\
@@ -333,7 +334,7 @@ class TemplateScript(object):
             else:
                 lower_table_name=table_name.lower()
             # 每个表生成一个文件
-            control_file_content=self.__create_control_file(newtable_name, configure.SQLLDR_CONTROL_FOLDER+lower_table_name, all_column_list, column_split)
+            control_file_content=self.__create_control_file(newtable_name, './sqlldr/'+lower_table_name, all_column_list, column_split)
             # 保存到文件中
             control_file_name= configure.SQLLDR_CONTROL_FOLDER + lower_table_name+'.ctl'
             control_file=open(control_file_name, 'w')

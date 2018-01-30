@@ -11,7 +11,7 @@ import os
 from app import appserver
 # print(os.path.abspath(os.path.dirname(__file__)))
 
-appserver.run(debug=True)
+appserver.run(debug=False)
 
 
 if __name__ == '__main__':
