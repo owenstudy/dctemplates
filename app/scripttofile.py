@@ -63,7 +63,7 @@ def generate_all_scripts(need_data_type = False):
 
 
 
-                script_handler.gen_control_files()
+                script_handler.gen_control_files(file_ext_name=sqlldr_config_file_name_ext,column_split=sqlldr_config_terminated_by,nls_lang=sqlldr_config_nls_lang)
         except Exception as e:
             traceback.print_exc()
             print('file:{0},error:{1}'.format(template,str(e)))

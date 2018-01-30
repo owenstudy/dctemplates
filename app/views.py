@@ -88,9 +88,7 @@ def download_file(filename):
 @appserver.route('/generatescript', methods=['POST'])
 def generatescript():
     try:
-        sqlloader_configure['file_name_ext'] = 'txt'
         generate_all_scripts()
-
         # 压缩sqlldr相关的脚本
         zip_dir(configure.SQLLDR_FOLDER)
         # 生成的脚本列表

@@ -7,7 +7,7 @@
 # @File    : __init__.py
 # @Software: PyCharm
 # ===============================================
-import os
+import os, app.configure
 # from flask_login import LoginManager
 # from flask_openid import OpenID
 # from app.configure import basedir
@@ -18,6 +18,7 @@ appserver = Flask(__name__)
 # print(__name__)
 appserver.config.from_object('app.configure')
 
+# print(appserver.config)
 # 用户登录
 # lm = LoginManager()
 # lm.init_app(app)
