@@ -25,10 +25,26 @@
    </div>
    <hr/>
       <div class="row">
+          <label>NLS_LANG</label>
+            {% for nls_lang in nls_lang_list %}
+              <label class="radio-inline col-sg-2">
+                    <input type="radio" name="nls_lang"  value="option1" checked >  {{nls_lang}}
+              </label>
+            {% endfor %}
+      </div>
+      <div class="row">
+          <label>Append or Replace</label>
+            {% for append_type in append_type_list %}
+              <label class="radio-inline col-sg-2">
+                    <input type="radio" name="append_type"  value="option1" checked>  {{append_type}}
+              </label>
+            {% endfor %}
+      </div>
+      <div class="row">
           <label>Data File Extention Name</label>
             {% for extname in file_name_ext_list %}
               <label class="radio-inline col-sg-2">
-                    <input type="radio" name="file_name_ext"  value="option1" >  {{extname}}
+                    <input type="radio" name="file_name_ext"  value="option1" checked>  {{extname}}
               </label>
             {% endfor %}
       </div>
@@ -36,21 +52,41 @@
           <label>Data Column Seperator </label>
             {% for terminated_by in terminated_by_list %}
                 <label class="radio-inline col-sg-2">
-                    <input type="radio" name="terminated_by"  value="option1" >  {{terminated_by}}
+                    <input type="radio" name="terminated_by"  value="option1" checked >  {{terminated_by}}
                 </label>
             {% endfor %}
           <label>Enclosed By </label>
             {% for enclosed_by in enclosed_by_list %}
                  <label class="radio-inline col-sg-3">
-                    <input type="radio" name="terminated_by"  value="option1" >  {{enclosed_by}}
+                    <input type="radio" name="enclosed_by"  value="option1" checked >  {{enclosed_by}}
                  </label>
             {% endfor %}
       </div>
+   <hr/>
       <div class="row">
+          <label>Data File Name</label>
+          <label class="radio-inline">
+                <input type="radio" name="file_name_capital"  value="option1"  checked>Capital
+          </label>
+          <label class="radio-inline">
+                <input type="radio" name="file_name_capital"  value="option1" >Lower
+          </label>
+      </div>
+      <div class="row">
+          <label>Dummy Data Type of Create Table</label>
+          <label class="radio-inline col-sg-2">
+                <input type="radio" name="dummy_data_type"  value="option1"  checked>  Yes
+          </label>
+          <label class="radio-inline col-sg-2">
+                <input type="radio" name="dummy_data_type"  value="option1" >  No
+          </label>
+          <label>Table Name Prefix</label>
+          <label class="col-sg-2">
+              <input type="text" class="form-control" id="name" placeholder="">
+          </label>
       </div>
    <hr/>
    <div class="header">
-    <h3 class="text-muted">Generate sql loader and verification scripts</h3>
     <form id="form1" method="post" action="generatescript" enctype="multipart/form-data">
         <div>
             <input type="submit" value="Generate Scripts"></input>
