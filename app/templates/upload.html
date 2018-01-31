@@ -24,11 +24,12 @@
     <h3 class="text-muted">Script configure options</h3>
    </div>
    <hr/>
+    <form id="form2" method="post" action="generatescript" enctype="multipart/form-data">
       <div class="row">
           <label>NLS_LANG</label>
             {% for nls_lang in nls_lang_list %}
               <label class="radio-inline col-sg-2">
-                    <input type="radio" name="nls_lang"  value="option1" checked >  {{nls_lang}}
+                    <input type="radio" name="nls_lang"  value={{nls_lang}} checked >  {{nls_lang}}
               </label>
             {% endfor %}
       </div>
@@ -36,15 +37,22 @@
           <label>Append or Replace</label>
             {% for append_type in append_type_list %}
               <label class="radio-inline col-sg-2">
-                    <input type="radio" name="append_type"  value="option1" checked>  {{append_type}}
+                    <input type="radio" name="append_type"  value={{append_type}} checked>  {{append_type}}
               </label>
             {% endfor %}
+          <label>Ignore First Row of Data File </label>
+              <label class="radio-inline col-sg-2">
+                    <input type="radio" name="ignore_first_row"  value="True" >  Yes
+              </label>
+              <label class="radio-inline col-sg-2">
+                    <input type="radio" name="ignore_first_row"  value="False" checked>  No
+              </label>
       </div>
       <div class="row">
           <label>Data File Extention Name</label>
             {% for extname in file_name_ext_list %}
               <label class="radio-inline col-sg-2">
-                    <input type="radio" name="file_name_ext"  value="option1" checked>  {{extname}}
+                    <input type="radio" name="file_name_ext"  value={{extname}} checked>  {{extname}}
               </label>
             {% endfor %}
       </div>
@@ -52,13 +60,13 @@
           <label>Data Column Seperator </label>
             {% for terminated_by in terminated_by_list %}
                 <label class="radio-inline col-sg-2">
-                    <input type="radio" name="terminated_by"  value="option1" checked >  {{terminated_by}}
+                    <input type="radio" name="terminated_by"  value={{terminated_by}} checked >  {{terminated_by}}
                 </label>
             {% endfor %}
           <label>Enclosed By </label>
             {% for enclosed_by in enclosed_by_list %}
                  <label class="radio-inline col-sg-3">
-                    <input type="radio" name="enclosed_by"  value="option1" checked >  {{enclosed_by}}
+                    <input type="radio" name="enclosed_by"  value={{enclosed_by}} checked >  {{enclosed_by}}
                  </label>
             {% endfor %}
       </div>
@@ -66,23 +74,35 @@
       <div class="row">
           <label>Data File Name</label>
           <label class="radio-inline">
-                <input type="radio" name="file_name_capital"  value="option1"  checked>Capital
+                <input type="radio" name="file_name_upper"  value="True"  checked>Capital
           </label>
           <label class="radio-inline">
-                <input type="radio" name="file_name_capital"  value="option1" >Lower
+                <input type="radio" name="file_name_upper"  value="False" >Lower
           </label>
       </div>
       <div class="row">
-          <label>Dummy Data Type of Create Table</label>
+          <label>Real Data Type For Columns</label>
           <label class="radio-inline col-sg-2">
-                <input type="radio" name="dummy_data_type"  value="option1"  checked>  Yes
+                <input type="radio" name="real_data_type"  value="False" checked  >  No
           </label>
           <label class="radio-inline col-sg-2">
-                <input type="radio" name="dummy_data_type"  value="option1" >  No
+                <input type="radio" name="real_data_type"  value="True" >  Yes
           </label>
           <label>Table Name Prefix</label>
           <label class="col-sg-2">
-              <input type="text" class="form-control" id="name" placeholder="">
+              <input type="text" class="form-control" name="table_prefix" placeholder="">
+          </label>
+      </div>
+      <div class="row">
+          <label>Source Schema User Name/Password@ConnectString</label>
+          <label class="col-sg-2">
+              <input type="text" class="form-control" name="src_user_name" placeholder="UserName">
+          </label>
+          <label class="col-sg-2">
+              <input type="text" class="form-control" name="src_user_pwd" placeholder="Password">
+          </label>
+          <label class="col-sg-2">
+              <input type="text" class="form-control" name="connectstring" placeholder="o46g4">
           </label>
       </div>
    <hr/>
@@ -93,6 +113,7 @@
         </div>
     </form>
    </div>
+    </form>
    <hr/>
 
    </div>
