@@ -91,6 +91,7 @@ def download_file(filename):
 @appserver.route('/generatescript', methods=['POST'])
 def generatescript():
     try:
+        script_options(request)
         generate_all_scripts()
         # 压缩sqlldr相关的脚本
         zip_dir(configure.SQLLDR_FOLDER)
@@ -100,8 +101,67 @@ def generatescript():
         return render_template('success.html', filenames=filelist)
     except Exception as e:
         return render_template('fail.html')
+# 处理传递过来的生成脚本参数
+def script_options(request):
+    sqlloader_configure = {"file_name_ext": "csv", "terminated_by": ",", "enclosed_by": '"', "append_type": "append",
+                           "nls_lang": "AMERICAN_AMERICA.ZHS16GBK", 'file_name_upper': True}
+    # sqlloader的一些配置信息
+    # file_name_ext
+    file_name_ext = request.values.getlist('file_name_ext')
+    for s in file_name_ext:
+        configure.sqlloader_configure['file_name_ext'] = s
+    # terminated_by
+    terminated_by = request.values.getlist('terminated_by')
+    for s in terminated_by:
+        configure.sqlloader_configure['terminated_by'] = s
+    # enclosed_by
+    enclosed_by = request.values.getlist('enclosed_by')
+    for s in enclosed_by:
+        configure.sqlloader_configure['enclosed_by'] = s
+    # append_type
+    append_type = request.values.getlist('append_type')
+    for s in append_type:
+        configure.sqlloader_configure['append_type'] = s
+    # nls_lang
+    nls_lang = request.values.getlist('nls_lang')
+    for s in nls_lang:
+        configure.sqlloader_configure['nls_lang'] = s
+    # file_name_upper
+    file_name_upper = request.values.getlist('file_name_upper')
+    for s in file_name_upper:
+        configure.sqlloader_configure['file_name_upper'] = __strtobool(s)
+    # ignore_first_row
+    ignore_first_row = request.values.getlist('ignore_first_row')
+    for s in ignore_first_row:
+        configure.sqlloader_configure['ignore_first_row'] = __strtobool(s)
+    # 创建表的一些配置信息
+    # real_data_type
+    file_name_upper = request.values.getlist('real_data_type')
+    for s in file_name_upper:
+        configure.create_table_configure['real_data_type'] = __strtobool(s)
+    # table_prefix
+    table_prefix = request.values.getlist('table_prefix')
+    for s in table_prefix:
+        configure.create_table_configure['table_prefix'] = s
+    # 数据库连接信息
+    # src_user_name
+    src_user_name = request.values.getlist('src_user_name')
+    for s in src_user_name:
+        configure.sqlloader_configure['src_user_name'] = s
+    # src_user_pwd
+    src_user_pwd = request.values.getlist('src_user_pwd')
+    for s in src_user_pwd:
+        configure.sqlloader_configure['src_user_pwd'] = s
+    # connectstring
+    connectstring = request.values.getlist('connectstring')
+    for s in connectstring:
+        configure.sqlloader_configure['connectstring'] = s
 
-
+def __strtobool(value):
+    if value.upper() == 'TRUE':
+        return True
+    else:
+        return False
 if __name__ == '__main__':
     appserver.run(
         host="localhost",

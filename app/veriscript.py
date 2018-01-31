@@ -247,12 +247,18 @@ class TemplateScript(object):
                         "{4} into table {1}\n"+\
                         "fields terminated by '{2}' optionally enclosed by '{5}' trailing nullcols\n"+\
                         "(\n{3}\n)"
-        control_file_format=control_file_format.format(sqlldr_config_file_name_ext,table_name.upper(),sqlldr_config_terminated_by,column_list,sqlldr_config_file_replace, sqlldr_config_enclosed_by)
+        control_file_format=control_file_format.format(sqlldr_config_file_name_ext,table_name,sqlldr_config_terminated_by,column_list,sqlldr_config_file_replace, sqlldr_config_enclosed_by)
         return control_file_format
     '''运行sqlldr的文件'''
     def __sqlldr_run_script(self, table_name):
-        sqlldr_script_format = "sqlldr $USERNAME/$PWD DIRECT=Y ROWS=50000 COLUMNARRAYROWS=50000 CONTROL=./controlfiles/{0}.ctl BAD=./bad/{0}.bad LOG=./log/{0}.log"
-        sqlldr_script= sqlldr_script_format.format(table_name.lower())
+        sqlldr_script_format = "sqlldr {src_user_name}/{src_user_pwd}@{connectstring} DIRECT=Y ROWS=50000 COLUMNARRAYROWS=50000 CONTROL=./control/{tablename}.ctl BAD=./bad/{tablename}.bad LOG=./log/{tablename}.log skip={ignore_first_row}"
+        # 是否忽略首行的标题
+        if configure.sqlloader_configure.get('ignore_first_row') is True:
+            ignore_first_row = 1
+        else:
+            ignore_first_row = 0
+        sqlldr_script = sqlldr_script_format.format(src_user_name = configure.sqlloader_configure.get('src_user_name'), src_user_pwd=configure.sqlloader_configure.get('src_user_pwd'),\
+                        connectstring = configure.sqlloader_configure.get('connectstring'), tablename = table_name, ignore_first_row=ignore_first_row)
         return sqlldr_script
     '''清除已经生成的sqlldr加载文件'''
     def clear_sqlldr_file(self):
@@ -278,6 +284,8 @@ class TemplateScript(object):
             os.mkdir(configure.SQLLDR_LOG_FOLDER)
         if os.path.exists(configure.SQLLDR_CONTROL_FOLDER) is False:
             os.mkdir(configure.SQLLDR_CONTROL_FOLDER)
+        if os.path.exists(configure.SQLLDR_DATAFILE_FOLDER) is False:
+            os.mkdir(configure.SQLLDR_DATAFILE_FOLDER)
         if os_type == 'win':
             file_name = file_name_format.format('bat')
             remark_str = '--'
@@ -334,7 +342,7 @@ class TemplateScript(object):
             else:
                 lower_table_name=table_name.lower()
             # 每个表生成一个文件
-            control_file_content=self.__create_control_file(newtable_name, './sqlldr/'+lower_table_name, all_column_list, column_split)
+            control_file_content=self.__create_control_file(newtable_name, './datafiles/'+lower_table_name, all_column_list, column_split)
             # 保存到文件中
             control_file_name= configure.SQLLDR_CONTROL_FOLDER + lower_table_name+'.ctl'
             control_file=open(control_file_name, 'w')
@@ -382,7 +390,13 @@ class TemplateScript(object):
             return ''
         # 取得外键表的主键，优先使用中间表中已经存在表的主键值
         if len(refertable.split('.')) > 1:
+            table_prefix = configure.create_table_configure.get('table_prefix')
             refertable_name = refertable.split('.')[0]
+            # 引用表到这里已经加了前缀，需要处理
+            if refertable_name[len(table_prefix):len(table_prefix)+2] ==  'DM':
+                newrefertable_name = refertable_name
+            else:
+                newrefertable_name =  refertable_name[len(table_prefix):]
         else:
             refertable_name = refertable
         pk_column_name=self.__get_pk_column_name(refertable)
@@ -392,11 +406,16 @@ class TemplateScript(object):
             if len(refertable.split('.'))>1:
                 pk_column_name = refertable.split('.')[1]
                 refertable_name = refertable.split('.')[0]
+                # # 对于以DM开头的加前缀，其它的表不需要加前缀
+                # if refertable_name[0:1] == 'DM':
+                #     newrefertable_name = configure.create_table_configure.get('table_prefix')+ refertable_name
+                # else:
+                #     newrefertable_name = refertable_name
         # 如果没有指定出外键表的字段名称则忽略生成这个外键校验
         if refertable is not None and pk_column_name is not None:
             veri_code = 'VERI_FOREIGN_KEY_TEMPLATE'
             where_sql = ' where ( not exists(select 1 from %s  b where %s.%s=b.%s) and %s is not null)'%\
-                        (refertable_name,table_name,column_name,pk_column_name, column_name)
+                        (newrefertable_name,table_name,column_name,pk_column_name, column_name)
         else:
             need_verify = False
 
@@ -559,7 +578,9 @@ class TemplateScript(object):
         return public_function_script+'\n'+create_table_script_result
 
     '''把创建表脚本写入文件'''
-    def save_template_create_script(self,file_name, need_data_type = False):
+    def save_template_create_script(self,file_name):
+        # 这个参数不再需要，直接从参数中读取
+        need_data_type = configure.create_table_configure.get('real_data_type')
         script_file=open(file_name,'w')
         filenameonly = file_name.split('/')[-1]
         script_file.write("spool {0}.log\n".format(filenameonly))
