@@ -3,7 +3,7 @@
 
 __author__ = 'Owen_Study/owen_study@126.com'
 
-import re,os
+import re,os, shutil
 from  app import template, configure
 
 ''' 传入mapping column list列表'''
@@ -282,6 +282,8 @@ class TemplateScript(object):
                 os.remove(sqlldr_win_file_name)
             if os.path.exists(sqlldr_linux_file_name):
                 os.remove(sqlldr_linux_file_name)
+            # 清险已经生成的所有的文件
+            shutil.rmtree(configure.SQLLDR_FOLDER)
         except:
             pass
     '''生成sqlldr windows格式的加载命令'''
