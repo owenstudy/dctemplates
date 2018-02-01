@@ -191,6 +191,7 @@ class TemplateScript(object):
             newtable_name = configure.create_table_configure.get('table_prefix')+table_name
             script='drop table '+newtable_name+';\n'
             script=script+'create table '+newtable_name +'(\n'
+            pk_column_list = ''
             for row in self.__mapping_column_list:
                 if row.tableName==table_name:
                     #调整字段的长度，使脚本对齐美观
@@ -210,14 +211,26 @@ class TemplateScript(object):
                         # 创建主键的索引
                         if row.primaryKey=='Y':
                             primary_key=' primary key'
+                            # 处理有可能有多个字段为主键的情况
+                            pk_column_list = pk_column_list + row.columnName+','
                         else:
                             primary_key=''
-                        script = script + ' varchar2(%d) %s'%(col_len,primary_key)
+                        # script = script + ' varchar2(%d) %s'%(col_len,primary_key)
+                        script = script + ' varchar2(%d) ' % (col_len)
                     except Exception as e:
                         print('创建Template表时出现错误： '+str(e))
                     script=script+',\n'
-            script=script[0:len(script)-2]+'\n);'
-            all_table_script=all_table_script+script+'\n'
+            script=script[0:len(script)-2]+'\n);\n'
+            # 对有主键的表生成主键信息，可以允许有多个字段的组合主键
+            if pk_column_list != '':
+                # 去除最后一个","
+                pk_column_list = pk_column_list[0:len(pk_column_list)-1]
+                pk_script = 'alter table {table_name} add CONSTRAINT pk_{table_name} PRIMARY KEY ({pk_column_list});\n'
+                # 主键脚本
+                pk_script = pk_script.format(table_name=table_name, pk_column_list=pk_column_list)
+                script = script + pk_script
+
+            all_table_script = all_table_script+script+'\n'
         return all_table_script
         pass
 
@@ -378,16 +391,21 @@ class TemplateScript(object):
     '''取得表的主键字段名称'''
     def __get_pk_column_name(self,table_name):
         refer_table_name = table_name.split('.')[0]
+        pk_column_list = ''
         for row in self.__mapping_column_list:
             if row.tableName==refer_table_name and row.primaryKey=='Y':
-                return row.columnName
-        return None
+                pk_column_list = pk_column_list + row.columnName + ','
+        # 删除最后多余的","
+        if pk_column_list is not None and pk_column_list != '':
+            pk_column_list = pk_column_list[0:len(pk_column_list)-1]
+        return pk_column_list
 
     '''校验外键,template表之间的校验'''
     def __get_foreign_key_sql(self,module_name,table_name, column_name, refertable):
         need_verify = True
         if refertable is None:
             return ''
+        newrefertable_name = refertable
         # 取得外键表的主键，优先使用中间表中已经存在表的主键值
         if len(refertable.split('.')) > 1:
             table_prefix = configure.create_table_configure.get('table_prefix')
@@ -412,7 +430,7 @@ class TemplateScript(object):
                 # else:
                 #     newrefertable_name = refertable_name
         # 如果没有指定出外键表的字段名称则忽略生成这个外键校验
-        if refertable is not None and pk_column_name is not None:
+        if newrefertable_name is not None and pk_column_name is not None:
             veri_code = 'VERI_FOREIGN_KEY_TEMPLATE'
             where_sql = ' where ( not exists(select 1 from %s  b where %s.%s=b.%s) and %s is not null)'%\
                         (newrefertable_name,table_name,column_name,pk_column_name, column_name)
@@ -431,20 +449,31 @@ class TemplateScript(object):
         return veri_sql
 
     ''' 校验唯一键数据'''
-    def __get_PK_sql(self,module_name,table_name, column_name,primarykey):
+    def __get_PK_sql(self,module_name,table_name, pk_column_list):
         need_verify = True
-        if primarykey == 'Y':
-            veri_code = 'VERI_PRIMARY_KEY'
-            where_sql = ' where (select count(*) from %s  b where %s.%s=b.%s)>1'%\
-                        (table_name,table_name,column_name,column_name)
-        else:
+        veri_code = 'VERI_PRIMARY_KEY'
+        where_sql = ' where (select count(*) from {table_name}  b where 1=1  {connectcondi})>1 '
+        one_connectcondi = ' and {table_name}.{column_name}=b.{column_name} '
+        all_connectcondi = ''
+        for pk_column in pk_column_list.split(','):
+            one_connectcondi = ' and {table_name}.{column_name}=b.{column_name} '
+            one_connectcondi = one_connectcondi.format(table_name=table_name, column_name = pk_column)
+            all_connectcondi = all_connectcondi + one_connectcondi
+        where_sql = where_sql.format(table_name = table_name, connectcondi = all_connectcondi)
+        if pk_column_list == '' or pk_column_list is None:
             need_verify = False
+        # if primarykey == 'Y':
+        #     veri_code = 'VERI_PRIMARY_KEY'
+        #     where_sql = ' where (select count(*) from %s  b where %s.%s=b.%s)>1'%\
+        #                 (table_name,table_name,column_name,column_name)
+        # else:
+        #     need_verify = False
 
         if need_verify:
             # 生成校验语句并把结果放到表中
             insert_result = self.__insert_result_sql
             veri_sql = 'select \'%s\' as module_name,\'%s\' as table_name,\'%s\' as column_name,\'%s\' as veri_code,count(*) as veri_result from %s\n' % \
-                       (module_name, table_name, column_name, veri_code, table_name)
+                       (module_name, table_name, pk_column_list, veri_code, table_name)
             veri_sql = insert_result + veri_sql + where_sql + ';\n'
         else:
             veri_sql = ''
@@ -540,8 +569,8 @@ class TemplateScript(object):
                     nonnullable_sql=self.__get_nullable_sql(row.moduleName,newtable_name,row.columnName,row.nullable)
                     total_veri_sql = total_veri_sql + nonnullable_sql
                     # 主键类型校验
-                    pk_sql=self.__get_PK_sql(row.moduleName,newtable_name,row.columnName,row.primaryKey)
-                    total_veri_sql = total_veri_sql + pk_sql
+                    # pk_sql=self.__get_PK_sql(row.moduleName,newtable_name,row.columnName,row.primaryKey)
+                    # total_veri_sql = total_veri_sql + pk_sql
                     # 唯一健的列名称，可以允许有多个列
                     if row.primaryKey == 'U':
                         unique_columns = unique_columns +row.columnName+','
@@ -555,6 +584,12 @@ class TemplateScript(object):
                     except Exception as e:
                         print(str(e))
                     total_veri_sql = total_veri_sql + fk_sql
+            # 生成主键的校验语句
+            # 主键类型校验
+            pk_column_list = self.__get_pk_column_name(table_name)
+            pk_sql = self.__get_PK_sql(row.moduleName, newtable_name, pk_column_list)
+            total_veri_sql = total_veri_sql + pk_sql
+
             # 生成多个组合的唯一键，在表的列扫描完成后再生成UNIQUE
             unique_sql = self.get_unique_sql(row.moduleName,newtable_name,unique_columns)
             total_veri_sql = total_veri_sql + unique_sql
