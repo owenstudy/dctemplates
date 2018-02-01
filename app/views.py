@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import os
 # We'll render HTML templates and access data sent by POST
 # using the request object from flask. Redirect and url_for
