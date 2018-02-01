@@ -227,7 +227,7 @@ class TemplateScript(object):
                 pk_column_list = pk_column_list[0:len(pk_column_list)-1]
                 pk_script = 'alter table {table_name} add CONSTRAINT pk_{table_name} PRIMARY KEY ({pk_column_list});\n'
                 # 主键脚本
-                pk_script = pk_script.format(table_name=table_name, pk_column_list=pk_column_list)
+                pk_script = pk_script.format(table_name=newtable_name, pk_column_list=pk_column_list)
                 script = script + pk_script
 
             all_table_script = all_table_script+script+'\n'
