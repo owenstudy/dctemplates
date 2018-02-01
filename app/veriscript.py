@@ -222,7 +222,7 @@ class TemplateScript(object):
                     script=script+',\n'
             script=script[0:len(script)-2]+'\n);\n'
             # 对有主键的表生成主键信息，可以允许有多个字段的组合主键
-            if pk_column_list != '':
+            if pk_column_list != '' and configure.create_table_configure.get('real_data_type') is True:
                 # 去除最后一个","
                 pk_column_list = pk_column_list[0:len(pk_column_list)-1]
                 pk_script = 'alter table {table_name} add CONSTRAINT pk_{table_name} PRIMARY KEY ({pk_column_list});\n'
@@ -627,6 +627,7 @@ class TemplateScript(object):
 
         script_file.write(create_table_script_template)
         script_file.write("\nspool off")
+        script_file.write("\n quit; ")
         script_file.close()
         return create_table_script_template
         pass
@@ -640,6 +641,7 @@ class TemplateScript(object):
 
         script_file.write(veri_script)
         script_file.write("\nspool off")
+        script_file.write("\n quit; ")
         script_file.close()
 
         return veri_script
@@ -648,6 +650,7 @@ class TemplateScript(object):
     def save_run_all_scripts(self,file_name,run_scripts):
         script_file=open(file_name,'w')
         script_file.write(run_scripts)
+        script_file.write('\nquit;')
         script_file.close()
 
 if __name__=='__main__':
