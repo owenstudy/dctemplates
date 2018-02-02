@@ -227,14 +227,14 @@ class TemplateScript(object):
                 pk_column_list = pk_column_list[0:len(pk_column_list)-1]
                 pk_script = 'alter table {table_name} add CONSTRAINT pk_{table_name} PRIMARY KEY ({pk_column_list});\n'
                 # 主键脚本
-                pk_script = pk_script.format(table_name=newtable_name, pk_column_list=pk_column_list)
+                pk_script = pk_script.format(table_name=newtable_name[0:26], pk_column_list=pk_column_list)
                 script = script + pk_script
             # 对于没有生成PK的表生成唯一性索引，确保后面的校验语句能够快速运行
             if pk_column_list != '' and configure.create_table_configure.get('real_data_type') is False:
-                index_name = 'INDX_'+table_name+'_PK'
+                index_name = 'INDX_'+table_name[0:21]+'_PK'
                 index_sql = 'create index {index_name} on {table_name} ({pk_column_list});\n'
                 index_sql = index_sql.format(index_name = index_name, table_name = table_name, pk_column_list = pk_column_list[0:len(pk_column_list)-1])
-                all_table_script = all_table_script + index_sql + '\n'
+                script = script + index_sql + '\n'
 
             all_table_script = all_table_script+script+'\n'
         return all_table_script
