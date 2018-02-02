@@ -470,14 +470,15 @@ class TemplateScript(object):
     def __get_PK_sql(self,module_name,table_name, pk_column_list):
         need_verify = True
         veri_code = 'VERI_PRIMARY_KEY'
-        where_sql = ' where (select count(*) from {table_name}  b where 1=1  {connectcondi})>1 '
+        # where_sql = ' where (select count(*) from {table_name}  b where 1=1  {connectcondi})>1 '
+        where_sql = ' (select count(*) from {table_name} group by {pk_column_list} having count(*) >1 )'
         one_connectcondi = ' and {table_name}.{column_name}=b.{column_name} '
-        all_connectcondi = ''
-        for pk_column in pk_column_list.split(','):
-            one_connectcondi = ' and {table_name}.{column_name}=b.{column_name} '
-            one_connectcondi = one_connectcondi.format(table_name=table_name, column_name = pk_column)
-            all_connectcondi = all_connectcondi + one_connectcondi
-        where_sql = where_sql.format(table_name = table_name, connectcondi = all_connectcondi)
+        # all_connectcondi = ''
+        # for pk_column in pk_column_list.split(','):
+        #     one_connectcondi = ' and {table_name}.{column_name}=b.{column_name} '
+        #     one_connectcondi = one_connectcondi.format(table_name=table_name, column_name = pk_column)
+        #     all_connectcondi = all_connectcondi + one_connectcondi
+        where_sql = where_sql.format(table_name = table_name, pk_column_list = pk_column_list)
         if pk_column_list == '' or pk_column_list is None:
             need_verify = False
         # if primarykey == 'Y':
@@ -490,9 +491,9 @@ class TemplateScript(object):
         if need_verify:
             # 生成校验语句并把结果放到表中
             insert_result = self.__insert_result_sql
-            veri_sql = 'select \'%s\' as module_name,\'%s\' as table_name,\'%s\' as column_name,\'%s\' as veri_code,count(*) as veri_result from %s\n' % \
-                       (module_name, table_name, pk_column_list, veri_code, table_name)
-            veri_sql = insert_result + veri_sql + where_sql + ';\n'
+            veri_sql = 'select \'%s\' as module_name,\'%s\' as table_name,\'%s\' as column_name,\'%s\' as veri_code,count(*) as veri_result from \n%s' % \
+                       (module_name, table_name, pk_column_list, veri_code, where_sql)
+            veri_sql = insert_result + veri_sql + ';\n'
         else:
             veri_sql = ''
 
