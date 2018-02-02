@@ -289,7 +289,7 @@ class TemplateScript(object):
             if os.path.exists(sqlldr_linux_file_name):
                 os.remove(sqlldr_linux_file_name)
             # 清险已经生成的所有的文件
-            shutil.rmtree(configure.SQLLDR_FOLDER)
+            shutil.rmtree(configure.DOWNLOAD_FOLDER)
         except:
             pass
     '''生成sqlldr windows格式的加载命令'''
