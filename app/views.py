@@ -98,8 +98,12 @@ def generatescript():
         generate_all_scripts()
         # 压缩sqlldr相关的脚本
         zip_dir(configure.DOWNLOAD_FOLDER)
+        os.remove(os.path.join(configure.APP_MAIN_FOLDER, 'allLoadVeriScripts.zip'))
+        os.rename(os.path.join(configure.APP_MAIN_FOLDER,'downloads.zip'),os.path.join(configure.APP_MAIN_FOLDER,'allLoadVeriScripts.zip'))
+        # 复制生成的压缩文件到下载目录
+
         # 生成的脚本列表
-        filelist = ['downloads.zip']
+        filelist = ['allLoadVeriScripts.zip']
 
         return render_template('success.html', filenames=filelist)
     except Exception as e:

@@ -290,6 +290,7 @@ class TemplateScript(object):
                 os.remove(sqlldr_linux_file_name)
             # 清险已经生成的所有的文件
             shutil.rmtree(configure.DOWNLOAD_FOLDER)
+            # 清除生成的压缩文件
         except:
             pass
     '''生成sqlldr windows格式的加载命令'''
