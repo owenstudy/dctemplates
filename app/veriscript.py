@@ -363,7 +363,7 @@ class TemplateScript(object):
             else:
                 lower_table_name=table_name.lower()
             # 每个表生成一个文件
-            control_file_content=self.__create_control_file(newtable_name, './datafiles/'+lower_table_name, all_column_list, column_split)
+            control_file_content=self.__create_control_file(newtable_name, './sqlldr/datafiles/'+lower_table_name, all_column_list, column_split)
             # 保存到文件中
             control_file_name= configure.SQLLDR_CONTROL_FOLDER + lower_table_name+'.ctl'
             control_file=open(control_file_name, 'w')
@@ -419,10 +419,14 @@ class TemplateScript(object):
             table_prefix = configure.create_table_configure.get('table_prefix')
             refertable_name = refertable.split('.')[0]
             # 引用表到这里已经加了前缀，需要处理
-            if refertable_name[len(table_prefix):len(table_prefix)+2] ==  'DM':
+            if refertable_name[len(table_prefix):len(table_prefix)+2] == 'DM':
                 newrefertable_name = refertable_name
             else:
-                newrefertable_name =  refertable_name[len(table_prefix):]
+                # 如果是非DM开头的代码表则需要引用目标库的表，如果目标的设置名称为非空则直接加上用户名前缀
+                if configure.sqlloader_configure.get('tar_user_name') !='':
+                    newrefertable_name = configure.sqlloader_configure.get('tar_user_name')+'.'+refertable_name[len(table_prefix):]
+                else:
+                    newrefertable_name = refertable_name[len(table_prefix):]
         else:
             refertable_name = refertable
         pk_column_name=self.__get_pk_column_name(refertable)
@@ -663,19 +667,20 @@ class TemplateScript(object):
         # 同时生成一个命令批处理文件以方便后面一次性调用所有的脚本
         # windows bat 文件
         if configure.script_public_configure.get('os') == 'win':
+            bat_file_path = os.path.split(file_name)[0]
             bat_file_name = os.path.split(file_name)[1]
-            bat_file_name = os.path.join(os.path.split(file_name)[0],bat_file_name.split('.')[0]+'.bat')
-            script_file = open(bat_file_name, 'w')
+            bat_file_name = bat_file_name.split('.')[0]+'.bat'
+            script_file = open(os.path.join(bat_file_path,bat_file_name), 'w')
             # 每一个运行的SQL文件生成一个批处理命令
-            script_file.write('sqlplus {user_name}/{password}@{connectstring} @{bat_file_name}'.format(\
+            script_file.write('sqlplus {user_name}/{password}@{connectstring} @{sql_file_name}'.format(\
                 user_name = configure.sqlloader_configure.get('src_user_name'), password = configure.sqlloader_configure.get('src_user_pwd'),\
-                connectstring = configure.sqlloader_configure.get('connectstring'), bat_file_name = bat_file_name))
+                connectstring = configure.sqlloader_configure.get('connectstring'), sql_file_name = os.path.split(file_name)[1]))
             script_file.close()
     def save_run_for_all_batch(self, file_name_list):
         script_file=open(os.path.join(configure.DOWNLOAD_FOLDER,'run_for_all.bat'),'w')
         # 多个批处理文件一次性执行
         for file_name in file_name_list.split(','):
-            script_file.write(file_name+'&&')
+            script_file.write('call '+ file_name+'\n')
         script_file.close()
 
 

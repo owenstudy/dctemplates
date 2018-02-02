@@ -97,9 +97,9 @@ def generatescript():
         script_options(request)
         generate_all_scripts()
         # 压缩sqlldr相关的脚本
-        zip_dir(configure.SQLLDR_FOLDER)
+        zip_dir(configure.DOWNLOAD_FOLDER)
         # 生成的脚本列表
-        filelist = ['00initial_scripts.sql','01veri_scripts.sql','sqlldr.zip']
+        filelist = ['downloads.zip']
 
         return render_template('success.html', filenames=filelist)
     except Exception as e:
@@ -159,6 +159,10 @@ def script_options(request):
     connectstring = request.values.getlist('connectstring')
     for s in connectstring:
         configure.sqlloader_configure['connectstring'] = s
+    # tar_user_name
+        tar_user_name = request.values.getlist('tar_user_name')
+    for s in tar_user_name:
+        configure.sqlloader_configure['tar_user_name'] = s
 
 def __strtobool(value):
     if value.upper() == 'TRUE':

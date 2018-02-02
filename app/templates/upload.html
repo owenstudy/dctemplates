@@ -12,7 +12,6 @@
    </div>
    <hr/>
    <div>
-   This is a list of the files you just uploaded, click on them to download them
    <ul>
     {% for file in filenames %}
      <li><a href="{{url_for('uploaded_file', filename=file)}}">{{file}}</a></li>
@@ -93,6 +92,7 @@
               <input type="text" class="form-control" name="table_prefix" placeholder="">
           </label>
       </div>
+   <hr/>
       <div class="row">
           <label>Source Schema User Name/Password@ConnectString</label>
           <label class="col-sg-2">
@@ -102,7 +102,13 @@
               <input type="text" class="form-control" name="src_user_pwd" placeholder="Password">
           </label>
           <label class="col-sg-2">
-              <input type="text" class="form-control" name="connectstring" placeholder="o46g4">
+              <input type="text" class="form-control" name="connectstring" placeholder="tnsString">
+          </label>
+      </div>
+      <div class="row">
+          <label>Target Schema User Name</label>
+          <label class="col-sg-2">
+              <input type="text" class="form-control" name="tar_user_name" placeholder="Target User Name">
           </label>
       </div>
    <hr/>
