@@ -77,7 +77,7 @@ def generate_all_scripts():
     init_file_name = os.path.join(configure.DOWNLOAD_FOLDER,'00initial_scripts.sql')
     script_handler.save_run_all_scripts(init_file_name,scripts_create_tables)
     # 保存校验表的脚本
-    scripts_veri='spool 01veri_scripts.log\n'+scripts_veri
+    scripts_veri='spool 02veri_scripts.log\n'+scripts_veri
     scripts_veri = scripts_veri+'\nspool off\n'
     veri_file_name = os.path.join(configure.DOWNLOAD_FOLDER,'02veri_scripts.sql')
     script_handler.save_run_all_scripts(veri_file_name,scripts_veri)
