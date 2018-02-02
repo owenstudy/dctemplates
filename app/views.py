@@ -88,7 +88,7 @@ def uploaded_file(filename):
 # 下载生成的脚本文件
 @appserver.route('/downloads/<filename>')
 def download_file(filename):
-    return send_from_directory(appserver.config['DOWNLOAD_FOLDER'],
+    return send_from_directory(appserver.config['APP_MAIN_FOLDER'],
                                filename)
 
 @appserver.route('/generatescript', methods=['POST'])
