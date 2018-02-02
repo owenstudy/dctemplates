@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import os
+import os, shutil
 # We'll render HTML templates and access data sent by POST
 # using the request object from flask. Redirect and url_for
 # will be used to redirect the user once the upload is done
@@ -19,13 +19,15 @@ from app import configure
 # Initialize the Flask application
 # app = Flask(__name__)
 # This is the path to the upload directory
+# 对目录进行初始化
 if os.path.exists(configure.SQLLDR_TEMPLATES_FOLDER) is False:
     os.mkdir(configure.SQLLDR_TEMPLATES_FOLDER)
+
 if os.path.exists(configure.DOWNLOAD_FOLDER) is False:
     os.mkdir(configure.DOWNLOAD_FOLDER)
 
 appserver.config['UPLOAD_FOLDER'] = configure.UPLOADS_FOLDER
-appserver.config['DOWNLOAD_FOLDER'] = configure.DOWNLOAD_FOLDER
+# appserver.config['DOWNLOAD_FOLDER'] = configure.DOWNLOAD_FOLDER
 # These are the extension that we are accepting to be uploaded
 appserver.config['ALLOWED_EXTENSIONS'] = set(['xlsx'])
 

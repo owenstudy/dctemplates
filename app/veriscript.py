@@ -282,16 +282,21 @@ class TemplateScript(object):
     '''清除已经生成的sqlldr加载文件'''
     def clear_sqlldr_file(self):
         try:
+            # 清除生成的压缩文件
+            if os.path.exists(configure.DOWNLOAD_FOLDER) is False:
+                os.mkdir(configure.DOWNLOAD_FOLDER)
+            else:
+                # 清险已经生成的所有的文件
+                shutil.rmtree(configure.DOWNLOAD_FOLDER)
+                os.mkdir(configure.DOWNLOAD_FOLDER)
             sqlldr_win_file_name=os.path.join(configure.DOWNLOAD_FOLDER,'01loadingdata.bat')
             sqlldr_linux_file_name =os.path.join(configure.DOWNLOAD_FOLDER,'01loadingdata.sh')
             if os.path.exists(sqlldr_win_file_name):
                 os.remove(sqlldr_win_file_name)
             if os.path.exists(sqlldr_linux_file_name):
                 os.remove(sqlldr_linux_file_name)
-            # 清险已经生成的所有的文件
-            shutil.rmtree(configure.DOWNLOAD_FOLDER)
-            # 清除生成的压缩文件
-        except:
+        except Exception as e:
+            print(str(e))
             pass
     '''生成sqlldr windows格式的加载命令'''
     def __save_sqlldr(self, file_content, os_type = 'win',  nls_lang= None):
