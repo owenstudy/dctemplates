@@ -79,11 +79,12 @@ def generate_all_scripts():
     # 保存校验表的脚本
     scripts_veri='spool 01veri_scripts.log\n'+scripts_veri
     scripts_veri = scripts_veri+'\nspool off\n'
-    veri_file_name = os.path.join(configure.DOWNLOAD_FOLDER,'01veri_scripts.sql')
+    veri_file_name = os.path.join(configure.DOWNLOAD_FOLDER,'02veri_scripts.sql')
     script_handler.save_run_all_scripts(veri_file_name,scripts_veri)
     # 保存成多个文件 时的执行所有脚本的命令文件
     script_handler.save_run_all_scripts(file_name_exec,run_all_scripts)
-
+    # 生成一次运行所有的脚本
+    script_handler.save_run_for_all_batch('00initial_scripts.bat,01loadingdata.bat,02veri_scripts.bat')
 if __name__=='__main__':
     # 默认为生成统一的数据类型
     create_table_configure = configure.create_table_configure.get('real_data_type', False)

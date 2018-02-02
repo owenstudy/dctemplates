@@ -17,6 +17,9 @@ nls_lang_list = ['AMERICAN_AMERICA.AR8MSWIN1256','AMERICAN_AMERICA.ZHS16GBK']
 # table_prefix 创建表时加的前缀，为了支持一些项目需要加一个表名前缀
 create_table_configure = {"real_data_type": False, "table_prefix":""}
 
+# 生成脚本的一些公共通用配置信息
+script_public_configure = {'os':'win'}
+
 import os
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 print(BASE_DIR)

@@ -229,6 +229,12 @@ class TemplateScript(object):
                 # 主键脚本
                 pk_script = pk_script.format(table_name=newtable_name, pk_column_list=pk_column_list)
                 script = script + pk_script
+            # 对于没有生成PK的表生成唯一性索引，确保后面的校验语句能够快速运行
+            if pk_column_list != '' and configure.create_table_configure.get('real_data_type') is False:
+                index_name = 'INDX_'+table_name+'_PK'
+                index_sql = 'create index {index_name} on {table_name} ({pk_column_list});\n'
+                index_sql = index_sql.format(index_name = index_name, table_name = table_name, pk_column_list = pk_column_list[0:len(pk_column_list)-1])
+                all_table_script = all_table_script + index_sql + '\n'
 
             all_table_script = all_table_script+script+'\n'
         return all_table_script
@@ -264,7 +270,7 @@ class TemplateScript(object):
         return control_file_format
     '''运行sqlldr的文件'''
     def __sqlldr_run_script(self, table_name):
-        sqlldr_script_format = "sqlldr {src_user_name}/{src_user_pwd}@{connectstring} DIRECT=Y ROWS=50000 COLUMNARRAYROWS=50000 CONTROL=./control/{tablename}.ctl BAD=./bad/{tablename}.bad LOG=./log/{tablename}.log skip={ignore_first_row}"
+        sqlldr_script_format = "sqlldr {src_user_name}/{src_user_pwd}@{connectstring} DIRECT=Y ROWS=50000 COLUMNARRAYROWS=50000 CONTROL=./sqlldr/control/{tablename}.ctl BAD=./sqlldr/bad/{tablename}.bad LOG=./sqlldr/log/{tablename}.log skip={ignore_first_row}"
         # 是否忽略首行的标题
         if configure.sqlloader_configure.get('ignore_first_row') is True:
             ignore_first_row = 1
@@ -276,8 +282,8 @@ class TemplateScript(object):
     '''清除已经生成的sqlldr加载文件'''
     def clear_sqlldr_file(self):
         try:
-            sqlldr_win_file_name=os.path.join(configure.SQLLDR_FOLDER,'01loadingdata.bat')
-            sqlldr_linux_file_name =os.path.join(configure.SQLLDR_FOLDER,'01loadingdata.sh')
+            sqlldr_win_file_name=os.path.join(configure.DOWNLOAD_FOLDER,'01loadingdata.bat')
+            sqlldr_linux_file_name =os.path.join(configure.DOWNLOAD_FOLDER,'01loadingdata.sh')
             if os.path.exists(sqlldr_win_file_name):
                 os.remove(sqlldr_win_file_name)
             if os.path.exists(sqlldr_linux_file_name):
@@ -291,7 +297,7 @@ class TemplateScript(object):
         # windows
         nls_lang_format='{0} NLS_LANG={1}\n'
         default_lang='AMERICAN_AMERICA.ZHS16GBK'
-        file_name_format=os.path.join(configure.SQLLDR_FOLDER,'01loadingdata.{0}')
+        file_name_format=os.path.join(configure.DOWNLOAD_FOLDER,'01loadingdata.{0}')
         # 创建两个目录存放bad&log
         if os.path.exists(configure.SQLLDR_BAD_FOLDER) is False:
             os.mkdir(configure.SQLLDR_BAD_FOLDER)
@@ -654,6 +660,24 @@ class TemplateScript(object):
         script_file.write(run_scripts)
         script_file.write('\nquit;')
         script_file.close()
+        # 同时生成一个命令批处理文件以方便后面一次性调用所有的脚本
+        # windows bat 文件
+        if configure.script_public_configure.get('os') == 'win':
+            bat_file_name = os.path.split(file_name)[1]
+            bat_file_name = os.path.join(os.path.split(file_name)[0],bat_file_name.split('.')[0]+'.bat')
+            script_file = open(bat_file_name, 'w')
+            # 每一个运行的SQL文件生成一个批处理命令
+            script_file.write('sqlplus {user_name}/{password}@{connectstring} @{bat_file_name}'.format(\
+                user_name = configure.sqlloader_configure.get('src_user_name'), password = configure.sqlloader_configure.get('src_user_pwd'),\
+                connectstring = configure.sqlloader_configure.get('connectstring'), bat_file_name = bat_file_name))
+            script_file.close()
+    def save_run_for_all_batch(self, file_name_list):
+        script_file=open(os.path.join(configure.DOWNLOAD_FOLDER,'run_for_all.bat'),'w')
+        # 多个批处理文件一次性执行
+        for file_name in file_name_list.split(','):
+            script_file.write(file_name+'&&')
+        script_file.close()
+
 
 if __name__=='__main__':
 
