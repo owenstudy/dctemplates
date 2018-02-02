@@ -100,7 +100,8 @@ def generatescript():
         generate_all_scripts()
         # 压缩sqlldr相关的脚本
         zip_dir(configure.DOWNLOAD_FOLDER)
-        os.remove(os.path.join(configure.APP_MAIN_FOLDER, 'allLoadVeriScripts.zip'))
+        if os.path.exists(os.path.join(configure.APP_MAIN_FOLDER, 'allLoadVeriScripts.zip')):
+            os.remove(os.path.join(configure.APP_MAIN_FOLDER, 'allLoadVeriScripts.zip'))
         os.rename(os.path.join(configure.APP_MAIN_FOLDER,'downloads.zip'),os.path.join(configure.APP_MAIN_FOLDER,'allLoadVeriScripts.zip'))
         # 复制生成的压缩文件到下载目录
 
