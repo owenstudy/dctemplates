@@ -417,7 +417,7 @@ class TemplateScript(object):
     '''校验外键,template表之间的校验'''
     def __get_foreign_key_sql(self,module_name,table_name, column_name, refertable):
         need_verify = True
-        if refertable is None:
+        if refertable is None or len(refertable.split('.')) == 1:
             return ''
         newrefertable_name = refertable
         # 取得外键表的主键，优先使用中间表中已经存在表的主键值
