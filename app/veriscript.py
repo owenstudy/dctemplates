@@ -550,7 +550,8 @@ class TemplateScript(object):
     def get_unique_sql(self,module_name,table_name, uni_column_str):
         if uni_column_str is None or uni_column_str == '':
             return ''
-        wheresql = 'where (select count(*) from {table_name} b where {connstr} )>1'
+        wheresql = ' (select count(*) from {table_name} group by {uni_column_list} having count(*) >1 )'
+        # wheresql = 'where (select count(*) from {table_name} b where {connstr} )>1'
         connstr = '1=1 '
         show_column_name = '['
         # 去除最后的,
@@ -563,12 +564,12 @@ class TemplateScript(object):
             connstr = connstr + ' and a.{column_name} = b.{column_name} '.format(column_name=column)
         show_column_name = show_column_name[0:len(show_column_name)-1]+']'
         # where 条件SQL
-        wheresql = wheresql.format(table_name=table_name, connstr=connstr)
+        wheresql = wheresql.format(table_name=table_name, uni_column_list=uni_column_str[0:len(uni_column_str)-1])
         # 选择语句
-        unique_sql = 'select \'{module_name}\' as module_name, \'{table_name}\' as table_name,\'{column_name}\' as column_name,\'{veri_code}\' as VERI_CODE,count(*) as veri_result from {table_name}  a '
-        unique_sql = unique_sql.format(module_name=module_name,table_name=table_name,column_name=show_column_name,veri_code= veri_code)
+        unique_sql = 'select \'{module_name}\' as module_name, \'{table_name}\' as table_name,\'{column_name}\' as column_name,\'{veri_code}\' as VERI_CODE,count(*) as veri_result from {wheresql} \n '
+        unique_sql = unique_sql.format(module_name=module_name,table_name=table_name,column_name=show_column_name,veri_code= veri_code, wheresql=wheresql)
         # 组合成最终的校验语句
-        unique_sql = self.__insert_result_sql + unique_sql +'\n' + wheresql +';\n'
+        unique_sql = self.__insert_result_sql + unique_sql +';\n'
         # print(unique_sql)
         return unique_sql
         pass
