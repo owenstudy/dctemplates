@@ -84,7 +84,7 @@ class TemplateScript(object):
             Begin
                 V_RESULT := 1;
                 errornum := 0;
-                for i in 1..4 loop
+                for i in 1..6 loop
                     begin 
                         if errornum = 0 then 
                           V_DATE := To_date (STR_DATE, 'mm/dd/yyyy');
@@ -103,6 +103,16 @@ class TemplateScript(object):
                         end if;
                         if errornum = 3 then                                           
                           V_DATE := To_date (STR_DATE, 'yyyy/mm/dd HH24:MI:ssss');
+                          v_result :=0;
+                          exit;                 
+                        end if;   
+                        if errornum = 4 then                                           
+                          V_DATE := To_date (STR_DATE, 'dd/mm/yyyy');
+                          v_result :=0;
+                          exit;                 
+                        end if;   
+                        if errornum = 5 then                                           
+                          V_DATE := To_date (STR_DATE, 'dd/mm/yyyy HH24:MI:ss');
                           v_result :=0;
                           exit;                 
                         end if;   
@@ -233,7 +243,7 @@ class TemplateScript(object):
             if pk_column_list != '' and configure.create_table_configure.get('real_data_type') is False:
                 index_name = 'INDX_'+table_name[0:21]+'_PK'
                 index_sql = 'create index {index_name} on {table_name} ({pk_column_list});\n'
-                index_sql = index_sql.format(index_name = index_name, table_name = table_name, pk_column_list = pk_column_list[0:len(pk_column_list)-1])
+                index_sql = index_sql.format(index_name = index_name, table_name = newtable_name, pk_column_list = pk_column_list[0:len(pk_column_list)-1])
                 script = script + index_sql + '\n'
 
             all_table_script = all_table_script+script+'\n'
