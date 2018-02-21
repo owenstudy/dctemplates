@@ -66,14 +66,52 @@ class Template(object):
                 mapping_rows.append(cellobj)
         return mapping_rows
 
+class DCDocConfigExcel(object):
+    # 初始化数据文件到object
+    def __init__(self,file_name,ignore_strike_row=True):
+        self.__file_name=file_name
+        self.excel_handler=openpyxl.load_workbook(file_name, data_only=True)
+        self.__ignore_strike_row=ignore_strike_row
+    # 取得excel配置的数据信息
+    def get_config_data(self):
+        docconfig = self.excel_handler.worksheets[0]
+        #所有的列名,如果新增加列则直接增加列名,返回的内容只包括列表所在的数据内容
+        column_title_name=('phase','sn','majorinfo','output','remark')
+        # 循环所有的行
+        config_rows=[]
+        for row in docconfig.rows:
+            # 循环所有 的列
+            cell_value={}
+            for cell in row:
+                #忽略已经加了删除线的行,只检查前两列是否有删除线，则说明本行是删除的，其它单元格的删除线不识别
+                if cell.font.strikethrough and cell.col_idx<=2 and self.__ignore_strike_row:
+                    break
+                # 排除掉第一行的标题
+                if cell.col_idx<=len(column_title_name) and cell.row>=2:
+                    title_name=column_title_name[cell.col_idx-1]
+                    cell_value[title_name]=cell.value
+            if len(cell_value) > 0:
+                # cellobj = common.JSONObject(cell_value)
+                # config_rows.append(cellobj)
+                config_rows.append(cell_value)
+
+        # print(config_rows[0].majorinfo)
+        for config in config_rows:
+            for value in config:
+                print(config[value])
+        return config_rows
+        pass
 
 
 if __name__=='__main__':
 
-    file_name='./templates/UAL_Mapping_PolAccount_V0.4.xlsx'
-    #file_name='sample.xlsx'
-    template1=Template(file_name)
-    mappingcols=template1.get_mapping_cols()
+    file_name='./数据迁移规范列表.xlsx'
 
-    for row in mappingcols:
-        print('%s,%s,%s'%(row.tableName,row.columnName,row.dataType))
+    docconfig = DCDocConfigExcel(file_name)
+    docconfig.get_config_data()
+    #file_name='sample.xlsx'
+    # template1=Template(file_name)
+    # mappingcols=template1.get_mapping_cols()
+
+    # for row in mappingcols:
+    #     print('%s,%s,%s'%(row.tableName,row.columnName,row.dataType))
