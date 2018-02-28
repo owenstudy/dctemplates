@@ -76,7 +76,7 @@ class DCDocConfigExcel(object):
     def get_config_data(self):
         docconfig = self.excel_handler.worksheets[0]
         #所有的列名,如果新增加列则直接增加列名,返回的内容只包括列表所在的数据内容
-        column_title_name=('phase','sn','majorinfo','output','remark')
+        column_title_name=('phase','sn','majorinfo','output','remark','referdoc')
         # 循环所有的行
         config_rows=[]
         for row in docconfig.rows:

@@ -140,6 +140,7 @@ class TemplateScript(object):
             newtable_name = configure.create_table_configure.get('table_prefix')+table_name
             script='drop table '+newtable_name+';\n'
             script=script+'create table '+newtable_name +'(\n'
+            pk_column_list = ''
             for row in self.__mapping_column_list:
                 if row.tableName==table_name:
                     #调整字段的长度，使脚本对齐美观
@@ -170,6 +171,8 @@ class TemplateScript(object):
                         # 创建主键的索引
                         if row.primaryKey=='Y':
                             primary_key=' primary key'
+                            # 处理有可能有多个字段为主键的情况
+                            pk_column_list = pk_column_list + row.columnName + ','
                         else:
                             primary_key=''
                         # 判断数据类型，为不同的类型生成相应的脚本
@@ -181,15 +184,29 @@ class TemplateScript(object):
                             if data_length == '':
                                 col_str = 'number'
                             else:
-                                col_str = 'number ({0}) '.format(data_length)
+                                col_str = 'number({0}) '.format(data_length)
                         else:
                             col_str = ' varchar2(300) '
                         # 补充PK值
-                        script = script + col_str+'{0}'.format(primary_key)
+                        script = script + col_str
                     except Exception as e:
                         print('创建Template表时出现错误： '+str(e))
                     script=script+',\n'
-            script=script[0:len(script)-2]+'\n);'
+            script=script[0:len(script)-2]+'\n);\n'
+            # 对有主键的表生成主键信息，可以允许有多个字段的组合主键
+            if pk_column_list != '' and configure.create_table_configure.get('real_data_type') is True:
+                # 去除最后一个","
+                pk_column_list = pk_column_list[0:len(pk_column_list)-1]
+                pk_script = 'alter table {table_name} add CONSTRAINT pk_{table_name} PRIMARY KEY ({pk_column_list});\n'
+                # 主键脚本
+                pk_script = pk_script.format(table_name=newtable_name[0:26], pk_column_list=pk_column_list)
+                script = script + pk_script
+            # 对于没有生成PK的表生成唯一性索引，确保后面的校验语句能够快速运行
+            if pk_column_list != '' and configure.create_table_configure.get('real_data_type') is False:
+                index_name = 'INDX_'+table_name[0:21]+'_PK'
+                index_sql = 'create index {index_name} on {table_name} ({pk_column_list});\n'
+                index_sql = index_sql.format(index_name = index_name, table_name = newtable_name, pk_column_list = pk_column_list[0:len(pk_column_list)-1])
+                script = script + index_sql + '\n'
             all_table_script=all_table_script+script+'\n'
         return all_table_script
         pass

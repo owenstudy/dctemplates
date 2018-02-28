@@ -146,8 +146,8 @@ def script_options(request):
         configure.sqlloader_configure['ignore_first_row'] = __strtobool(s)
     # 创建表的一些配置信息
     # real_data_type
-    file_name_upper = request.values.getlist('real_data_type')
-    for s in file_name_upper:
+        real_data_type = request.values.getlist('real_data_type')
+    for s in real_data_type:
         configure.create_table_configure['real_data_type'] = __strtobool(s)
     # table_prefix
     table_prefix = request.values.getlist('table_prefix')
