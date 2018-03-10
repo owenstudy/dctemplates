@@ -5,10 +5,11 @@ __author__ = 'Owen_Study/owen_study@126.com'
 
 import openpyxl,re, os
 from app import common
+import numba
 
 '''从excel加载template'''
-
 class Template(object):
+    @numba.jit()
     # 初始化数据文件到object
     def __init__(self,file_name,ignore_strike_row=True):
         self.__file_name=file_name
@@ -32,7 +33,7 @@ class Template(object):
                 break
         return mapping_columns_sheet
 
-
+    @numba.jit()
     # 读取excel columns中的字段信息，放到json对象中
     def get_mapping_cols(self):
         mapping_columns_sheet=self.__get_mapping_cols_sheet(self.excel_handler)
