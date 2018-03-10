@@ -433,6 +433,9 @@ class TemplateScript(object):
     def __get_pk_column_name(self,table_name):
         refer_table_name = table_name.split('.')[0]
         pk_column_list = ''
+        # 处理加了前缀的情况
+        table_prefix = configure.create_table_configure.get('table_prefix')
+        refer_table_name = refer_table_name.replace(table_prefix,'')
         for row in self.__mapping_column_list:
             if row.tableName==refer_table_name and row.primaryKey=='Y':
                 pk_column_list = pk_column_list + row.columnName + ','
