@@ -93,6 +93,17 @@ def download_file(filename):
     return send_from_directory(appserver.config['APP_MAIN_FOLDER'],
                                filename)
 
+@appserver.route('/dcportal', methods=['POST'])
+def dcportal():
+    # TODO 这个菜单列表从excel中加载
+    # menu_list = ['Presales','Mapping','Development','Testing','UAT','Cut-over','Post-Live']
+    menu_list = ['DC-Tools','Standard-Doc','Business-Doc']
+    menu_items = {'DC-Tools':{'ODI':'link-odi','Oracle':'#','Python':'#','PL/SQL-Devlopment':'#'},
+                 'Standard-Doc':{'mappingformat':'https://shimo.im/sheet/gEWw3y37St8wKgK7/ 点击链接查看「数迁痛点收集」，或复制链接用石墨文档 App 打开'},
+                 'Business-Doc':{'scope':'#'}
+                 }
+    return render_template('index_dc.html', menu_list=menu_list,menu_items=menu_items)
+
 @appserver.route('/generatescript', methods=['POST'])
 def generatescript():
     try:

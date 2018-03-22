@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="utf-8">
+   <title>在线尝试 Bootstrap 实例</title>
+   <link rel="stylesheet" href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css">
+   <script src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
+   <script src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body>
+<div class="container">
+  <h2>DC Portal</h2>
+  <p> Data migration document</p>
+  <ul class="nav nav-tabs">
+    <li class="active"><a data-toggle="tab" href="#home">首页</a></li>
+  {% for main_menu in menu_list %}
+    <li><a data-toggle="tab" href="#{{main_menu}}">{{main_menu}}</a></li>
+  {% endfor %}
+  </ul>
+
+  <div class="tab-content">
+    <div id="home" class="tab-pane fade in active">
+      <h3>首页</h3>
+      <p>数据迁移的一个实时共享平台,包括各种文档共享,标准文档,DC最容易查找和使用的平台!</p>
+    </div>
+  <hr/>
+    {% for main_menu in menu_list %}
+    <div id="{{main_menu}}" class="tab-pane fade">
+      <h3>{{main_menu}}</h3>
+      <hr/>
+        <div class="col-md-4">
+          <ul class="nav nav-pills nav-stacked">
+            {% for menuitem in menu_items.get(main_menu) %}
+              <li><a href='#{{menuitem}}'>{{menuitem}}</a></li>
+            {% endfor %}
+          </ul>
+        </div>
+    <div class="col-md-8">
+        显示详细内容xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    </div>
+    </div>
+    {% endfor %}
+   <br/>
+
+  </div>
+</div>
+
+</body>
+</html>
