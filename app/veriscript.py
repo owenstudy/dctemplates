@@ -725,7 +725,7 @@ class TemplateScript(object):
 if __name__=='__main__':
 
 
-    script=TemplateScript('./uploads/UAL_Mapping_Party_V0.2.9.xlsx')
+    script=TemplateScript('./1.Template_Mapping_Party_V0.9_DM.xlsx')
 
     # script.get_unique_sql('ilp','DM_CONTRACT_INVEST_RATE','item_id,account_code,prem_type')
     script.clear_sqlldr_file()
