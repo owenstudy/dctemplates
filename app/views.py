@@ -92,7 +92,37 @@ def uploaded_file(filename):
 def download_file(filename):
     return send_from_directory(appserver.config['APP_MAIN_FOLDER'],
                                filename)
+# 对综合统计报表数据进行合并,生成差异报表
+@appserver.route('/rr_upload', methods=['POST'])
+def rr_upload():
+    # Get the name of the uploaded files
+    uploaded_files = request.files.getlist("file[]")
+    filenames = []
+    # 清除已经存在的文件列表
+    clean_dir(appserver.config['UPLOAD_FOLDER'])
+    # 加载选择的文件
+    for file in uploaded_files:
+        # Check if the file is one of the allowed types/extensions
+        if file and allowed_file(file.filename):
+            # Make the filename safe, remove unsupported chars
+            filename = secure_filename(file.filename)
+            # Move the file form the temporal folder to the upload
+            # folder we setup
+            file.save(os.path.join(appserver.config['UPLOAD_FOLDER'], filename))
+            # Save the filename into a list, we'll use it later
+            filenames.append(filename)
+            # Redirect the user to the uploaded_file route, which
+            # will basicaly show on the browser the uploaded file
+    return render_template('rr_upload.html', filenames=filenames)
+    pass
+#  对RR报表的数据进行merge
+@appserver.route('/rr_download', methods=['POST'])
+def merge_rrreport():
 
+    filenames = 'sample.xlsx'
+    return render_template('rr_download.html', filenames=filenames)
+
+    pass
 @appserver.route('/dcportal', methods=['POST'])
 def dcportal():
     # TODO 这个菜单列表从excel中加载

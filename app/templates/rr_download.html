@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+    <title>Script has been generated successfully</title>
+</head>
+<body>
+  <div class="container">
+   <div class="header">
+    <h3 class="text-muted">Merge RR Report List</h3>
+   </div>
+   <hr/>
+    <div>
+        Click the file to download
+       <ul>
+        {% for file in filenames %}
+         <li><a href="{{url_for('download_file', filename=file)}}">{{file}}</a></li>
+        {% endfor %}
+       </ul>
+    </div>
+  </div>
+
+
+</body>
+</html>

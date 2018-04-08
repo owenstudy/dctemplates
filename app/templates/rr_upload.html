@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+ <head>
+    <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="https://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+ </head>
+ <body>
+  <div class="container">
+   <div class="header">
+    <h3 class="text-muted">Uploaded files</h3>
+   </div>
+   <hr/>
+   <div>
+   <ul>
+    {% for file in filenames %}
+     <li><a href="{{url_for('uploaded_file', filename=file)}}">{{file}}</a></li>
+    {% endfor %}
+   </ul>
+   </div>
+   <hr/>
+    <div class="header">
+    <h3 class="text-muted">Merge RR Report</h3>
+   </div>
+   <hr/>
+
+   <div class="header">
+    <form id="form1" method="post" action="merge_rrreport" enctype="multipart/form-data">
+        <div>
+            <input type="submit" value="Merge RR Report"></input>
+        </div>
+    </form>
+   </div>
+  </div>
+ </body>
+</html>
