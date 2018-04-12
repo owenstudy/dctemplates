@@ -12,7 +12,7 @@ file_name_ext_list = [ 'txt','csv']
 terminated_by_list = ['TAB',',']
 enclosed_by_list = ['|','"']
 append_type_list = ['append', 'replace']
-nls_lang_list = ['AMERICAN_AMERICA.AR8MSWIN1256','AMERICAN_AMERICA.ZHS16GBK']
+nls_lang_list = ['AMERICAN_AMERICA.AR8MSWIN1256','AMERICAN_AMERICA.ZHS16GBK','AMERICAN_AMERICA.AL32UTF8']
 
 # real_data_type 生成创建中间表的控制选项, 真实的数据类型或者实际定义的数据类型,
 # table_prefix 创建表时加的前缀，为了支持一些项目需要加一个表名前缀
