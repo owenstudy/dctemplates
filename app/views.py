@@ -164,7 +164,10 @@ def script_options(request):
     # terminated_by
     terminated_by = request.values.getlist('terminated_by')
     for s in terminated_by:
-        configure.sqlloader_configure['terminated_by'] = s
+        if s=='TAB':
+            configure.sqlloader_configure['terminated_by'] = '\t'
+        else:
+            configure.sqlloader_configure['terminated_by'] = s
     # enclosed_by
     enclosed_by = request.values.getlist('enclosed_by')
     for s in enclosed_by:
