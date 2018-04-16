@@ -285,15 +285,20 @@ class TemplateScript(object):
         sqlldr_config_file_name_ext = file_name +'.' + configure.sqlloader_configure.get('file_name_ext', 'txt')
         sqlldr_config_terminated_by = configure.sqlloader_configure.get('terminated_by', ',')
         sqlldr_config_enclosed_by = configure.sqlloader_configure.get('enclosed_by', '"')
+        # 处理有些数据文件出现用TAB分隔但是用"作为enclosed by时会有数据错位的现象，去除掉这个选项后就没有问题了
+        if sqlldr_config_enclosed_by =='None':
+            new_sqlldr_config_enclosed_by = ''
+        else:
+            new_sqlldr_config_enclosed_by = "optionally enclosed by '{0}'".format(sqlldr_config_enclosed_by)
         sqlldr_config_nls_lang = configure.sqlloader_configure.get('nls_lang', "AMERICAN_AMERICA.ZHS16GBK")
         # print(configure.sqlloader_configure)
         # TODO 增加文件名大小写的参数配置
         control_file_format='load data \n'+\
                         "infile '{0}'\n"+\
                         "{4} into table {1}\n"+\
-                        "fields terminated by '{2}' optionally enclosed by '{5}' trailing nullcols\n"+\
+                        "fields terminated by '{2}' {5} trailing nullcols\n"+\
                         "(\n{3}\n)"
-        control_file_format=control_file_format.format(sqlldr_config_file_name_ext,table_name,sqlldr_config_terminated_by,column_list,sqlldr_config_file_replace, sqlldr_config_enclosed_by)
+        control_file_format=control_file_format.format(sqlldr_config_file_name_ext,table_name,sqlldr_config_terminated_by,column_list,sqlldr_config_file_replace, new_sqlldr_config_enclosed_by)
         return control_file_format
     '''运行sqlldr的文件'''
     def __sqlldr_run_script(self, table_name):
@@ -385,6 +390,14 @@ class TemplateScript(object):
             for row in self.__mapping_column_list:
                 if row.tableName == table_name:
                     # 每个列一行组成列的字符串
+                    # 对于字符超过500的则用实际的长度
+                    data_length_int = self.__get_data_length(row.length)
+                    if row.dataType=='VARCHAR2' and data_length_int is not None:
+                        if data_length_int >=500:
+                            one_column_list = '{0} CHAR({2}) \"TRIM(:{1})\",\n'.format(row.columnName.ljust(30),
+                                                                            row.columnName.ljust(30),data_length_int)
+                            all_column_list = all_column_list + one_column_list
+                            continue
                     one_column_list = one_column_list_format.format(row.columnName.ljust(30), row.columnName.ljust(30))
                     all_column_list = all_column_list + one_column_list
             # 去除最后一行的,

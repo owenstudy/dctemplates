@@ -10,7 +10,7 @@ sqlloader_configure = {"file_name_ext": "csv", "terminated_by":",", "enclosed_by
 # sqlloader的选项列表
 file_name_ext_list = [ 'txt','csv']
 terminated_by_list = ['TAB',',']
-enclosed_by_list = ['|','"']
+enclosed_by_list = ['None','|','"']
 append_type_list = ['append', 'replace']
 nls_lang_list = ['AMERICAN_AMERICA.AR8MSWIN1256','AMERICAN_AMERICA.ZHS16GBK','AMERICAN_AMERICA.AL32UTF8']
 
