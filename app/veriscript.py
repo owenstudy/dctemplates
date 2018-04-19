@@ -20,7 +20,7 @@ class TemplateScript(object):
         #date format
         self.__date_format='yyyy/mm/dd'
         #保存公用的Sql
-        self.__insert_result_sql='insert into dm_template_veri (module_name,table_name,column_name,veri_code,veri_result)\n'
+        self.__insert_result_sql='insert into dm_template_veri (module_name,table_name,column_name,veri_code,veri_result,veri_sql)\n'
 
     def test(self):
         #self.__get_table_list()
@@ -49,7 +49,7 @@ class TemplateScript(object):
         create_table_script="""
         drop table dm_template_veri;
         create table dm_template_veri(module_name varchar2(100), table_name varchar2(100),
-        column_name varchar2(100),veri_code varchar2(100),veri_result number);
+        column_name varchar2(100),veri_code varchar2(100),veri_result number,veri_sql varchar2(4000));
         """
         return create_table_script
         pass
@@ -501,8 +501,14 @@ class TemplateScript(object):
         if need_verify:
             # 生成校验语句并把结果放到表中
             insert_result = self.__insert_result_sql
-            veri_sql = 'select \'%s\' as module_name,\'%s\' as table_name,\'%s\' as column_name,\'%s\' as veri_code,count(*) as veri_result from %s\n' % \
-                       (module_name, table_name, column_name, veri_code, table_name)
+            # veri_sql = 'select \'%s\' as module_name,\'%s\' as table_name,\'%s\' as column_name,\'%s\' as veri_code,count(*) as veri_result,"[VERI_SQL]" as veri_sql from %s\n' % \
+            #            (module_name, table_name, column_name, veri_code, table_name)
+            # 校验的简化语句以方便直接使用查询
+            select_sql = 'select {column_name}  from {table_name} '.format(column_name=column_name,table_name=table_name)+where_sql+';'
+            # 对于把校验SQL放到校验结果中以方便查询
+            veri_sql = 'select \'%s\' as module_name,\'%s\' as table_name,\'%s\' as column_name,\'%s\' as veri_code,count(*) as veri_result,\'%s\' as veri_sql from %s\n' % \
+                       (module_name, table_name, column_name, veri_code,select_sql,table_name)
+
             veri_sql = insert_result + veri_sql + where_sql + ';\n'
         else:
             veri_sql = ''
@@ -534,8 +540,10 @@ class TemplateScript(object):
         if need_verify:
             # 生成校验语句并把结果放到表中
             insert_result = self.__insert_result_sql
-            veri_sql = 'select \'%s\' as module_name,\'%s\' as table_name,\'%s\' as column_name,\'%s\' as veri_code,count(*) as veri_result from \n%s' % \
-                       (module_name, table_name, pk_column_list, veri_code, where_sql)
+            # 校验的简化语句以方便直接使用查询
+            select_sql = 'select {column_name}  from {table_name} '.format(column_name=pk_column_list,table_name=table_name)+where_sql+';'
+            veri_sql = 'select \'%s\' as module_name,\'%s\' as table_name,\'%s\' as column_name,\'%s\' as veri_code,count(*) as veri_result,\'%s\' as veri_sql from \n%s' % \
+                       (module_name, table_name, pk_column_list, veri_code,select_sql, where_sql)
             veri_sql = insert_result + veri_sql + ';\n'
         else:
             veri_sql = ''
@@ -554,8 +562,10 @@ class TemplateScript(object):
         if need_verify:
             # 生成校验语句并把结果放到表中
             insert_result = self.__insert_result_sql
-            veri_sql = 'select \'%s\' as module_name,\'%s\' as table_name,\'%s\' as column_name,\'%s\' as veri_code,count(*) as veri_result from %s\n' % \
-                       (module_name, table_name, column_name, veri_code, table_name)
+            # 校验的简化语句以方便直接使用查询
+            select_sql = 'select {column_name}  from {table_name} '.format(column_name=column_name,table_name=table_name)+where_sql+';'
+            veri_sql = 'select \'%s\' as module_name,\'%s\' as table_name,\'%s\' as column_name,\'%s\' as veri_code,count(*) as veri_result,\'%s\' as veri_sql from %s\n' % \
+                       (module_name, table_name, column_name, veri_code,select_sql, table_name)
             veri_sql = insert_result + veri_sql + where_sql + ';\n'
         else:
             veri_sql = ''
@@ -582,8 +592,10 @@ class TemplateScript(object):
         if need_verify:
             # 生成校验语句并把结果放到表中
             insert_result = self.__insert_result_sql
-            veri_sql = 'select \'%s\' as module_name,\'%s\' as table_name,\'%s\' as column_name,\'%s\' as veri_code,count(*) as veri_result from %s\n' % \
-                       (module_name, table_name, column_name, veri_code, table_name)
+            # 校验的简化语句以方便直接使用查询
+            select_sql = 'select {column_name}  from {table_name} '.format(column_name=column_name,table_name=table_name)+where_sql+';'
+            veri_sql = 'select \'%s\' as module_name,\'%s\' as table_name,\'%s\' as column_name,\'%s\' as veri_code,count(*) as veri_result,\'%s\' as veri_sql from %s\n' % \
+                       (module_name, table_name, column_name, veri_code,select_sql, table_name)
             veri_sql = insert_result + veri_sql + where_sql+';\n'
         else:
             veri_sql=''
@@ -608,9 +620,12 @@ class TemplateScript(object):
         show_column_name = show_column_name[0:len(show_column_name)-1]+']'
         # where 条件SQL
         wheresql = wheresql.format(table_name=table_name, uni_column_list=uni_column_str[0:len(uni_column_str)-1])
+        # 校验的简化语句以方便直接使用查询
+        select_sql = 'select {column_name}  from {table_name} '.format(column_name=uni_column_str,
+                                                                       table_name=table_name) + wheresql + ';'
         # 选择语句
-        unique_sql = 'select \'{module_name}\' as module_name, \'{table_name}\' as table_name,\'{column_name}\' as column_name,\'{veri_code}\' as VERI_CODE,count(*) as veri_result from {wheresql} \n '
-        unique_sql = unique_sql.format(module_name=module_name,table_name=table_name,column_name=show_column_name,veri_code= veri_code, wheresql=wheresql)
+        unique_sql = 'select \'{module_name}\' as module_name, \'{table_name}\' as table_name,\'{column_name}\' as column_name,\'{veri_code}\' as VERI_CODE,count(*) as veri_result,{veri_sql} as veri_sql from {wheresql} \n '
+        unique_sql = unique_sql.format(module_name=module_name,table_name=table_name,column_name=show_column_name,veri_code= veri_code,veri_sql = select_sql, wheresql=wheresql)
         # 组合成最终的校验语句
         unique_sql = self.__insert_result_sql + unique_sql +';\n'
         # print(unique_sql)
