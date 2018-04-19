@@ -605,7 +605,7 @@ class TemplateScript(object):
     def get_unique_sql(self,module_name,table_name, uni_column_str):
         if uni_column_str is None or uni_column_str == '':
             return ''
-        wheresql = ' (select count(*) from {table_name} group by {uni_column_list} having count(*) >1 )'
+        wheresql = ' (select {uni_column_list},count(*) from {table_name} group by {uni_column_list} having count(*) >1 )'
         # wheresql = 'where (select count(*) from {table_name} b where {connstr} )>1'
         connstr = '1=1 '
         show_column_name = '['
@@ -621,10 +621,9 @@ class TemplateScript(object):
         # where 条件SQL
         wheresql = wheresql.format(table_name=table_name, uni_column_list=uni_column_str[0:len(uni_column_str)-1])
         # 校验的简化语句以方便直接使用查询
-        select_sql = 'select {column_name}  from {table_name} '.format(column_name=uni_column_str,
-                                                                       table_name=table_name) + wheresql + ';'
+        select_sql = 'select * from {table_name} '.format(table_name=wheresql) + ';'
         # 选择语句
-        unique_sql = 'select \'{module_name}\' as module_name, \'{table_name}\' as table_name,\'{column_name}\' as column_name,\'{veri_code}\' as VERI_CODE,count(*) as veri_result,{veri_sql} as veri_sql from {wheresql} \n '
+        unique_sql = 'select \'{module_name}\' as module_name, \'{table_name}\' as table_name,\'{column_name}\' as column_name,\'{veri_code}\' as VERI_CODE,count(*) as veri_result,\'{veri_sql}\' as veri_sql from {wheresql} \n '
         unique_sql = unique_sql.format(module_name=module_name,table_name=table_name,column_name=show_column_name,veri_code= veri_code,veri_sql = select_sql, wheresql=wheresql)
         # 组合成最终的校验语句
         unique_sql = self.__insert_result_sql + unique_sql +';\n'
