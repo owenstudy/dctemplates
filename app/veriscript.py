@@ -704,7 +704,7 @@ class TemplateScript(object):
         script_file.write(create_table_script_result)
         script_file.write(public_function_script)
         script_file.close()
-        return public_function_script+'\n'+create_table_script_result
+        return create_table_script_result+'\n'+public_function_script+'\n'
 
     '''把创建表脚本写入文件'''
     def save_template_create_script(self,file_name):
