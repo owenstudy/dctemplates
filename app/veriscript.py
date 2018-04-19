@@ -49,8 +49,24 @@ class TemplateScript(object):
         create_table_script="""
         drop table dm_template_veri;
         create table dm_template_veri(module_name varchar2(100), table_name varchar2(100),
-        column_name varchar2(100),veri_code varchar2(100),veri_result number,veri_sql varchar2(4000));
+        column_name varchar2(100),veri_code varchar2(100),veri_result number,veri_sql varchar2(4000));\n
         """
+        # 创建报表视图，表一级统计
+        create_table_script = create_table_script +\
+            """
+            create or replace view v_template_pass_rate_bytable as 
+            select aa.module_name,aa.table_name,pass_veri_cnt,total_veri_cnt,round(pass_veri_cnt/aa.total_veri_cnt,3) pass_rate from (
+            select a.module_name,a.table_name, sum(case when veri_result=0 then 1 else 0 end) pass_veri_cnt,count(*) total_veri_cnt  from dm_template_veri a group by a.module_name, a.table_name
+            ) aa;\n
+            """
+        # 模块级视图
+        create_table_script = create_table_script +\
+            """
+            create or replace view v_template_pass_rate_bymodule as 
+            select a.module_name, round(sum(a.pass_veri_cnt)/sum(a.total_veri_cnt),3) pass_rate from v_template_veri_pass_rate a
+             group by module_name ;\n 
+            """
+
         return create_table_script
         pass
     '''校验中使用到的公共函数'''
@@ -131,6 +147,7 @@ class TemplateScript(object):
             End;\n
             /
         """
+
         return public_function_script
     '''生成创建template表的脚本'''
     def __create_template_script_datatype(self):
