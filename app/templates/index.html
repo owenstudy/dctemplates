@@ -2,11 +2,29 @@
 <html lang="en">
  <head>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+  <script src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
  </head>
  <body>
   <div class="container">
    <div class="header">
-    <h3 class="text-muted">Upload the data migration templates(*.xlsx)</h3>
+    <h3 class="text-muted">Upload the data migration templates(*.xlsx)
+     <a href="#" class="tooltip-test" data-toggle="tooltip" title="
+        使用说明:
+        1. 只支持xlsx类型的excel,老格式的文件不支持，需要转换为最新的格式
+        2. 文件的格式必须是标准的格式，mapping columns sheet名称一定要是MappingColumns
+        3. MAPPING COLUMN的顺序必须是开始的前10列，顺序类型如下： Table Name	Column Name	Data Type	Length	Nullable Key	Short Description	Descirption of Data Migration	Default Value	Reference Table
+        4. 列的数据类型定义只支持三种类型的处理，DATE, NUMBER, VARCHAR2
+     校验结果说明:
+        针对Template的定义，生成相应的数据基础校验检查
+        A. 数字类型的校验
+        B. 日期类型的校验
+        C. 字符长度的校验
+        D. 外键表完整性校验(Reference Table中设置为外键表名.列名(如:DM_PARTY.PARTY_ID)的形式会生成外键值校验)
+        E. 主键值唯一性校验
+        F. 唯一键校验(一个表只支持一组组合唯一键校验，需要在Key列设置为字母U，所有标志为U的字段会自动生成
+     ">Format?</a>
+    </h3>
+
    </div>
    <hr/>
    <div>
@@ -27,5 +45,12 @@
    </form>
   </div>
   </div>
+
+ <script>
+	$(function () { $("[data-toggle='tooltip']").tooltip(); });
+
+</script>
+
+
  </body>
 </html>

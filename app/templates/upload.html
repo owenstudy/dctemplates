@@ -4,7 +4,8 @@
     <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css">
 	<script src="https://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
 	<script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
- </head>
+   <script src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
+</head>
  <body>
   <div class="container">
    <div class="header">
@@ -20,12 +21,12 @@
    </div>
    <hr/>
     <div class="header">
-    <h3 class="text-muted">Script configure options</h3>
+    <h3 class="text-muted"> <a href="#" class="tooltip-test" data-toggle="tooltip" title="sqlloader参数选项">Script configure options</a></h3>
    </div>
    <hr/>
     <form id="form2" method="post" action="generatescript" enctype="multipart/form-data">
       <div class="row">
-          <label>NLS_LANG</label>
+          <label><a href="#" class="tooltip-test" data-toggle="tooltip" title="sqlldr加载时的语言选项，如果需要新增加联系作者增加">NLS_LANG</a></label>
             {% for nls_lang in nls_lang_list %}
               <label class="radio-inline col-sg-2">
                     <input type="radio" name="nls_lang"  value={{nls_lang}} checked >  {{nls_lang}}
@@ -71,7 +72,7 @@
       </div>
    <hr/>
       <div class="row">
-          <label>Data File Name</label>
+          <label><a href="#" class="tooltip-test" data-toggle="tooltip" title="数据文件名是大写/小写表名">Data File Name</a></label>
           <label class="radio-inline">
                 <input type="radio" name="file_name_upper"  value="True"  checked>Capital
           </label>
@@ -80,21 +81,21 @@
           </label>
       </div>
       <div class="row">
-          <label>Real Data Type For Columns</label>
+          <label><a href="#" class="tooltip-test" data-toggle="tooltip" title="创建表时用template中的实际类型还是默认虚拟类型varchar2(300)或大于300的实际定义值">Real Data Type For Columns</a></label>
           <label class="radio-inline col-sg-2">
                 <input type="radio" name="real_data_type"  value="False" checked  >  No
           </label>
           <label class="radio-inline col-sg-2">
                 <input type="radio" name="real_data_type"  value="True" >  Yes
           </label>
-          <label>Table Name Prefix</label>
+          <label><a href="#" class="tooltip-test" data-toggle="tooltip" title="创建表时统一增加的表前缀字符">Table Name Prefix</a></label>
           <label class="col-sg-2">
               <input type="text" class="form-control" name="table_prefix" placeholder="">
           </label>
       </div>
    <hr/>
       <div class="row">
-          <label>Source Schema User Name/Password@ConnectString</label>
+          <label><a href="#" class="tooltip-test" data-toggle="tooltip" title="加载数据进入的中间oracle库的连接信息">Source Schema User Name/Password@ConnectString</a></label>
           <label class="col-sg-2">
               <input type="text" class="form-control" name="src_user_name" placeholder="UserName">
           </label>
@@ -106,7 +107,7 @@
           </label>
       </div>
       <div class="row">
-          <label>Target Schema User Name</label>
+          <label><a href="#" class="tooltip-test" data-toggle="tooltip" title="需要引用目标库表的schema名称，主要是校验脚本中代码表的引用">Target Schema User Name</a></label>
           <label class="col-sg-2">
               <input type="text" class="form-control" name="tar_user_name" placeholder="Target User Name">
           </label>
