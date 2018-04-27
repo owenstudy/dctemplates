@@ -91,49 +91,58 @@ class TemplateScript(object):
                 /
         """
         public_function_script=public_function_script+"""
-    CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
+CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
                 Return Number
             Is
                 V_RESULT   Integer;
                 V_DATE     Date;
-                errornum integer; 
+                errornum integer;
             Begin
                 V_RESULT := 1;
                 errornum := 0;
+                --处理11:05:47这种是合法的情况
+                if length(STR_DATE)<8 then 
+                  v_result :=1;
+                  return v_result;
+                elsif length(STR_DATE)=8 and instr(str_date,':')>0 then
+                  v_result :=1;
+                  return v_result;
+                end if;
+                
                 for i in 1..6 loop
-                    begin 
-                        if errornum = 0 then 
+                    begin
+                        if errornum = 0 then
                           V_DATE := To_date (STR_DATE, 'mm/dd/yyyy');
                           v_result :=0;
                           exit;
-                        end if; 
-                        if errornum = 1 then                         
+                        end if;
+                        if errornum = 1 then
                           V_DATE := To_date (STR_DATE, 'yyyy/mm/dd');
                           v_result :=0;
                           exit;
                         end if;
-                        if errornum = 2 then                         
+                        if errornum = 2 then
                           V_DATE := To_date (STR_DATE, 'yyyy/mm/dd HH24:MI:ss');
                           v_result :=0;
-                          exit;     
+                          exit;
                         end if;
-                        if errornum = 3 then                                           
+                        if errornum = 3 then
                           V_DATE := To_date (STR_DATE, 'yyyy/mm/dd HH24:MI:ssss');
                           v_result :=0;
-                          exit;                 
-                        end if;   
-                        if errornum = 4 then                                           
+                          exit;
+                        end if;
+                        if errornum = 4 then
                           V_DATE := To_date (STR_DATE, 'dd/mm/yyyy');
                           v_result :=0;
-                          exit;                 
-                        end if;   
-                        if errornum = 5 then                                           
+                          exit;
+                        end if;
+                        if errornum = 5 then
                           V_DATE := To_date (STR_DATE, 'dd/mm/yyyy HH24:MI:ss');
                           v_result :=0;
-                          exit;                 
-                        end if;   
+                          exit;
+                        end if;
                      exception
-                       when others then 
+                       when others then
                            errornum :=errornum+1;
                            V_RESULT := 1;
                      end;
