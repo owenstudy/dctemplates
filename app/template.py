@@ -309,13 +309,102 @@ class DCReport(object):
             pddata.columns = list(column_title_name)
         return pddata
 
+'''大地的校验语句，生成语句后保存到日志表以方便跟踪'''
+class DCVerifySQL(object):
+    # 初始化数据文件到object
+    def __init__(self,file_name,ignore_strike_row=True):
+        self.__file_name=file_name
+        self.excel_handler=openpyxl.load_workbook(file_name, data_only=True)
+        self.__ignore_strike_row=ignore_strike_row
+        self.__sql_file_handler = open('dm_verify_sql.sql','w')
+    # 生成校验语句的表
+    def __create_verify_log_table(self):
+        sql = '''
+        drop table dm_verify_sql_log;
+        create table dm_verify_sql_log (
+            verify_type varchar2(100), 
+            sn varchar2(100),
+            product_code_list varchar2(1000),
+            business_column varchar2(100), 
+            business_rule varchar2(4000),
+            table_name varchar2(100), 
+            column_name varchar2(100),
+            sql varchar2(4000),
+            is_migrated varchar2(2),
+            verify_cnt integer, 
+            error_msg varchar2(4000),
+            insert_time  date default sysdate
+        );
+        '''
+    # 取得excel校验语句的数据信息，各个sheet中的格式应该保持统一以方便统一生成
+    def get_verify_sheet_data(self, sheetindex = 0 ):
+        docconfig = self.excel_handler.worksheets[sheetindex]
+        #所有的列名,如果新增加列则直接增加列名,返回的内容只包括列表所在的数据内容
+        column_title_name=('序列','产品Code','字段/业务','规则(必录，逻辑等)','表名','字段名','sql','数迁需要?(Y/N)')
+        # 循环所有的行
+        config_rows=[]
+        for row in docconfig.rows:
+            # 循环所有 的列
+            cell_value={}
+            for cell in row:
+                #忽略已经加了删除线的行,只检查前两列是否有删除线，则说明本行是删除的，其它单元格的删除线不识别
+                if cell.font.strikethrough and cell.col_idx<=2 and self.__ignore_strike_row:
+                    break
+                # 排除掉第一行的标题
+                if cell.col_idx<=len(column_title_name) and cell.row>=2:
+                    title_name=column_title_name[cell.col_idx-1]
+                    cell_value[title_name]=cell.value
+                    # 过滤掉数迁需要为N的记录，第7列是是否迁移标志列
+                    if cell.col_idx == 8 and cell.value == 'N':
+                        cell_value = {}
+                        break
+            if len(cell_value) > 0:
+                # cellobj = common.JSONObject(cell_value)
+                # config_rows.append(cellobj)
+                config_rows.append(cell_value)
 
+        # print(config_rows[0].majorinfo)
+        for config in config_rows:
+            for value in config:
+                print(config[value])
+        return config_rows
+        pass
+    # 取得所有的需要校验的sheet，传入sheets列表,如:[0,1,2,3]表示前四个sheet
+    def get_all_sqls(self, sheet_index_list):
+        sheet_sql_list = []
+        for sheet in sheet_index_list:
+            data = self.get_verify_sheet_data(sheet)
+            sheet_sql_list.append(data)
+        return sheet_sql_list
+        pass
+    # 根据EXCEL中的语句，生成能运行的校验语句后直接运行
+    def gen_sql_file(self):
+        all_sql_sheets = self.get_all_sqls([0,1,2,3])
+        insert_sql = """
+        declare \n
+         v_cnt number;\n
+         err_msg varchar2(4000);\n
+        begin \n
+        execute immediate {sql} into v_cnt; \n
+        exception when others then \n
+        err_msg := sqlerrm; \n
+        insert into dm_verify_sql_log (verify_type,sn,product_code_list,business_column,business_rule,table_name,column_name,sql,is_migrated,verify_cnt,error_msg) \n
+        select {c_1},{c_2},{c_3},{c_4},{c_5},{c_6},{c_7},{c_8},{c_9},{c_10},{c_11},{c_12} from dual; \n
+        end;/ \n
+        """
+        pass
 if __name__=='__main__':
 
-    file_name='./DataMigrationReconciliationReport_V2.5_LS.xlsx'
+    file_name='./DataMigrationReconciliationReport_0528.xlsx'
+    # file_name='./投保字段规则合集_20180525.xlsx'
 
-    dcreport = DCReport(file_name)
-    dcreport.process_report_data()
+    dcreport = DCVerifySQL(file_name)
+    sheet_list = [0,1,2,3]
+    data = dcreport.get_all_sqls(sheet_list)
+
+    dcrrreport = DCReport(file_name)
+    dcrrreport.process_report_data()
+
     # docconfig = DCDocConfigExcel(file_name)
     # docconfig.get_config_data()
     #file_name='sample.xlsx'

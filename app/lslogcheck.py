@@ -10,6 +10,7 @@
 
 import cx_Oracle, os
 from app import configure
+from app import oracleconn
 #执行查询 语句
 # cursor.execute("select * from tabs")
 #获取一条记录
@@ -25,12 +26,13 @@ class LSLogCheck(object):
         self.__user_pwd =userpwd
         self.__connect_string = connectstring
         self.__table_list = tablelist
-        if connectstring != '':
-            conn = cx_Oracle.connect('{user_name}/{password}@{connstring}'.format(user_name=user_name,password=userpwd,connstring=connectstring))
-        else:
-            conn = cx_Oracle.connect('{user_name}/{password}'.format(user_name=user_name,password=userpwd))
+        # if connectstring != '':
+        #     conn = cx_Oracle.connect('{user_name}/{password}@{connstring}'.format(user_name=user_name,password=userpwd,connstring=connectstring))
+        # else:
+        #     conn = cx_Oracle.connect('{user_name}/{password}'.format(user_name=user_name,password=userpwd))
+        self.conn = oracleconn.oracleconn(user_name,userpwd,connectstring);
         # 公共执行的cursor
-        self.cursor = conn.cursor()
+        self.cursor = self.conn.cursor()
         sqlfilename = os.path.join(configure.DOWNLOAD_FOLDER,'03VeriLSLogTable.sql')
         self.sqlfilehandler = open(sqlfilename,'w')
         # 写入初始化脚本
