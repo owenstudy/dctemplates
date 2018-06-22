@@ -35,7 +35,23 @@
     <input type="submit" value="Upload" class="span2">
    </form>
    <hr/>
-
+    <h3 class="text-muted">Generate Verification Script from Triggers
+         <a href="#" class="tooltip-test" data-toggle="tooltip" title="
+        使用说明:
+        根据寿险系统中存在的触发器自动生成校验迁移数据的存储过程脚本
+        输入：
+            1. 指定需要生成表的数据库连接信息
+            2. 需要生成表的列表
+        输出：触发器校验脚本
+        校验说明：
+        1. 校验结果保存在表 dc_trigger_check
+     ">Help?</a>
+    </h3>
+   <hr/>
+   <form action="trigger_script_ui" method="post" enctype="multipart/form-data">
+    <input type="submit" value="Trigger Script Generate" class="span2">
+   </form>
+   <hr/>
    <form action="rr_upload" method="post" enctype="multipart/form-data">
    <input type="file" multiple="" name="file[]" class="span3" /><br/>
     <input type="submit" value="Reconciliation Report Upload" class="span2">

@@ -35,22 +35,28 @@ class TriggerCheck(object):
         self.__exec_script_list = []
     # 把生成的脚本保存到文件
     def save_script_to_file(self):
-        # 写入初始化脚本
-        createtablesql = self.create_veri_result_table()
-        # 文件头信息
-        self.sqlfilehandler.write(self.sql_file_header(self.__logfile_name))
-        # 创建表信息
-        self.sqlfilehandler.write(createtablesql+'\n')
-        # TRIGGER脚本
-        trigger_scripts = self.gen_trigger_alltables()
-        self.sqlfilehandler.write(trigger_scripts+'\n')
-        # 执行过程的脚本
-        exec_scripts = self.exec_procedure_script()
-        self.sqlfilehandler.write(exec_scripts+'\n')
-        # 末尾脚本
-        self.sqlfilehandler.write(self.sql_file_foot())
-        # 写入完成
-        self.sqlfilehandler.close()
+        try:
+            # 写入初始化脚本
+            createtablesql = self.create_veri_result_table()
+            # 文件头信息
+            self.sqlfilehandler.write(self.sql_file_header(self.__logfile_name))
+            # 创建表信息
+            self.sqlfilehandler.write(createtablesql+'\n')
+            # TRIGGER脚本
+            trigger_scripts = self.gen_trigger_alltables()
+            self.sqlfilehandler.write(trigger_scripts+'\n')
+            # 执行过程的脚本
+            exec_scripts = self.exec_procedure_script()
+            self.sqlfilehandler.write(exec_scripts+'\n')
+            # 末尾脚本
+            self.sqlfilehandler.write(self.sql_file_foot())
+            # 写入完成
+            self.sqlfilehandler.close()
+            return True
+        except Exception as e:
+            print(str(e))
+            return False
+
     '''生成执行过程的脚本'''
     def exec_procedure_script(self):
         script = ''
