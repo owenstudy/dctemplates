@@ -94,7 +94,7 @@ class TriggerCheck(object):
     def gen_trigger_alltables(self):
         all_scripts = ''
         for table_name in self.__table_list:
-            table_trigger_scripts = self.gen_trigger_bytable(table_name)
+            table_trigger_scripts = self.gen_trigger_bytable(str.upper(table_name))
             all_scripts = all_scripts + table_trigger_scripts + '\n'
             pass
         return all_scripts

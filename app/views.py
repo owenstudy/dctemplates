@@ -15,7 +15,7 @@ from app.common import clean_dir, zip_dir
 from app.scripttofile import generate_all_scripts
 from app.configure import sqlloader_configure
 from app.lstriggercheck import TriggerCheck
-from app import configure
+from app import configure,template
 
 # Initialize the Flask application
 # app = Flask(__name__)
@@ -100,7 +100,9 @@ def rr_upload():
     uploaded_files = request.files.getlist("file[]")
     filenames = []
     # 清除已经存在的文件列表
-    clean_dir(appserver.config['UPLOAD_FOLDER'])
+    clean_dir(configure.UPLOADS_FOLDER)
+    clean_dir(configure.DOWNLOAD_FOLDER)
+
     # 加载选择的文件
     for file in uploaded_files:
         # Check if the file is one of the allowed types/extensions
@@ -109,7 +111,9 @@ def rr_upload():
             filename = secure_filename(file.filename)
             # Move the file form the temporal folder to the upload
             # folder we setup
-            file.save(os.path.join(appserver.config['UPLOAD_FOLDER'], filename))
+            file.save(os.path.join(appserver.config['DOWNLOAD_FOLDER'], filename))
+            # file.save(os.path.join(appserver.config['UPLOADS_FOLDER'], filename))
+            # file.save(os.path.join(appserver.config['DOWNLOAD_FOLDER'], filename))
             # Save the filename into a list, we'll use it later
             filenames.append(filename)
             # Redirect the user to the uploaded_file route, which
@@ -117,10 +121,22 @@ def rr_upload():
     return render_template('rr_upload.html', filenames=filenames)
     pass
 #  对RR报表的数据进行merge
-@appserver.route('/rr_download', methods=['POST'])
+@appserver.route('/merge_rrreport', methods=['POST'])
 def merge_rrreport():
-    filenames = 'sample.xlsx'
-    return render_template('rr_download.html', filenames=filenames)
+    file_path=configure.DOWNLOAD_FOLDER
+    files=os.listdir(file_path)
+    # 处理报表文件
+    for rr_file in files:
+        filename = os.path.join(file_path,rr_file)
+        rrreport = template.DCReport(filename)
+        rrreport.process_report_data()
+        # 复制到根目录以方便和其它程序的下载页面共享
+        shutil.copy(filename, configure.APP_MAIN_FOLDER)
+    # 返回生成的文件
+    # filenames = 'sample.xlsx'
+    # 复制到根目录以方便下载
+
+    return render_template('rr_download.html', filenames=files)
 
 # 调用触发器脚本生成页面
 @appserver.route('/trigger_script_ui', methods=['POST'])

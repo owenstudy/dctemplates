@@ -52,6 +52,16 @@
     <input type="submit" value="Trigger Script Generate" class="span2">
    </form>
    <hr/>
+    <h3 class="text-muted">Reconciliation Report Upload(*.xlsx)
+     <a href="#" class="tooltip-test" data-toggle="tooltip" title="
+        使用说明:
+        1. 按标准的报表模板准备语句及报表数据，本功能主要比较这两个sheet,[BRR_Target] --目标库的报表结果值,[BRR_SRC] --源系统的报表结果值
+        2. 对数据迁移的对数报表进行比较，找到源和目标之间的差异
+        2. 更新两个sheet,[ReportSummary],[ReportDiff]
+     ">Format?</a>
+     <a href={{url_for('.static',_external=True, filename='DataMigrationReconciliationReport_V2.5_LS.xlsx')}} class="tooltip-test" data-toggle="tooltip" title="样例文档">Sample?</a>
+
+    </h3>
    <form action="rr_upload" method="post" enctype="multipart/form-data">
    <input type="file" multiple="" name="file[]" class="span3" /><br/>
     <input type="submit" value="Reconciliation Report Upload" class="span2">

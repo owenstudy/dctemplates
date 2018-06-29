@@ -395,7 +395,7 @@ class DCVerifySQL(object):
         pass
 if __name__=='__main__':
 
-    file_name='./DataMigrationReconciliationReport_0528.xlsx'
+    file_name='./downloads/DataMigrationReconciliationReport_V2.5_LS.xlsx'
     # file_name='./投保字段规则合集_20180525.xlsx'
 
     dcreport = DCVerifySQL(file_name)
