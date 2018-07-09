@@ -29,8 +29,14 @@ def hJson(json1,i=0):
     #程序入口，对adict进行处理，第二个参数可以不传
     else:
         print("{0}\n  is not josn object!".format(json1))
+# 取得SQL语句在from后面的表名列表，只取主SQL听table list
+def get_sqlfrom_table_list(sql):
+
+    pass
+
 if __name__ == '__main__':
-    jsonfile = open('jsontest.json','r')
+    jsonfile = open('jsontest.json','r',encoding='utf-8')
+    jsonstr = jsonfile.readlines()
     adict = json.load(jsonfile)
     hJson(adict)
     pass
