@@ -33,7 +33,7 @@ class LSLogCheck(object):
         self.conn = oracleconn.oracleconn(user_name,userpwd,connectstring);
         # 公共执行的cursor
         self.cursor = self.conn.cursor()
-        sqlfilename = os.path.join(configure.DOWNLOAD_FOLDER,'03VeriLSLogTable.sql')
+        sqlfilename = os.path.join(configure.DOWNLOAD_FOLDER,'05VeriLSLogTable.sql')
         self.sqlfilehandler = open(sqlfilename,'w')
         # 写入初始化脚本
         createtablesql = self.create_veri_result_table()
@@ -43,6 +43,8 @@ class LSLogCheck(object):
         create_table_script="""
         create table dm_template_veri(module_name varchar2(100), table_name varchar2(100),
         column_name varchar2(100),veri_code varchar2(100),veri_result number);
+        --删除之前的记录
+        delete dm_template_veri where module_name ='LOG';
         """
         return create_table_script
         pass
@@ -102,6 +104,7 @@ class LSLogCheck(object):
     def checkalltables(self):
         for table_name in self.__table_list:
             self.check_log(table_name,'')
+        return True
         pass
 if __name__ == '__main__':
     checklist = [

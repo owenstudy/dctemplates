@@ -101,7 +101,7 @@ class TriggerCheck(object):
     # 检查一张表的所有TRIGGER并生成脚本返回
     def gen_trigger_bytable(self, table_name):
         # 不用的字段
-        where = "not (trigger_name like '%BD' or trigger_name like '%AUD')"
+        where = "not (trigger_name like '%BD' or trigger_name like '%AUD' or trigger_name like '%REFRESH')"
         sql = "select trigger_name from user_triggers a where a.table_name='{table_name}' and {where}".format(table_name=table_name,where=where)
         self.cursor.execute(sql)
         all_triggers = self.cursor.fetchall()

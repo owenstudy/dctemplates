@@ -52,6 +52,26 @@
     <input type="submit" value="Trigger Script Generate" class="span2">
    </form>
    <hr/>
+    <!--日志生成的调用页面-->
+    <h3 class="text-muted">Generate eBao Life Log Check Script
+         <a href="#" class="tooltip-test" data-toggle="tooltip" title="
+        使用说明:
+        检查寿险数据迁移中Log生成的数据是否和源表中一致
+        输入：
+            1. 指定需要生成表的数据库连接信息
+            2. 需要生成表的列表
+        输出：检查LOG表数据的脚本
+        校验说明:
+        1. 校验结果保存在表 dm_template_veri
+     ">Help?</a>
+
+    </h3>
+   <hr/>
+   <form action="lslogcheck_ui" method="post" enctype="multipart/form-data">
+    <input type="submit" value="LS Log Check Script Generate" class="span2">
+   </form>
+    <!--报表的内容-->
+   <hr/>
     <h3 class="text-muted">Reconciliation Report Upload(*.xlsx)
      <a href="#" class="tooltip-test" data-toggle="tooltip" title="
         使用说明:
@@ -62,6 +82,7 @@
      <a href={{url_for('.static',_external=True, filename='DataMigrationReconciliationReport_V2.5_LS.xlsx')}} class="tooltip-test" data-toggle="tooltip" title="样例文档">Sample?</a>
 
     </h3>
+
    <form action="rr_upload" method="post" enctype="multipart/form-data">
    <input type="file" multiple="" name="file[]" class="span3" /><br/>
     <input type="submit" value="Reconciliation Report Upload" class="span2">

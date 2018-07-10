@@ -16,6 +16,7 @@ from app.scripttofile import generate_all_scripts
 from app.configure import sqlloader_configure
 from app.lstriggercheck import TriggerCheck
 from app import configure,template
+from app.lslogcheck import LSLogCheck
 
 # Initialize the Flask application
 # app = Flask(__name__)
@@ -143,7 +144,7 @@ def merge_rrreport():
 def trigger_script_ui():
 
     return render_template('trigger_script.html')
-# 生成
+# 生成触发器的脚本
 @appserver.route('/gen_trigger_script', methods=['POST'])
 def gen_trigger_script():
     # 数据库连接信息
@@ -178,6 +179,48 @@ def gen_trigger_script():
         return render_template('success.html', filenames=filelist)
     else:
         return render_template('fail.html')
+
+# 调用日志比较脚本生成页面
+@appserver.route('/lslogcheck_ui', methods=['POST'])
+def lslogcheck_ui():
+
+    return render_template('lslogcheck_script.html')
+# 生成LOG比较的脚本
+@appserver.route('/gen_lslogcheck_script', methods=['POST'])
+def gen_lslogcheck_script():
+    # 数据库连接信息
+    # src_user_name
+    src_user_name_list = request.values.getlist('user_name')
+    for s in src_user_name_list:
+        user_name = s
+    # src_user_pwd
+    src_user_pwd_list = request.values.getlist('user_pwd')
+    for s in src_user_pwd_list:
+        user_pwd = s
+    # connectstring
+    connectstring_list = request.values.getlist('connectstring')
+    for s in connectstring_list:
+        connectstring = s
+    tables = request.values.getlist('table_list')
+    tables_new = tables[0].split('\r\n')
+    table_list = []
+    for s in tables_new:
+        table_list.append(s)
+    # 生成脚本
+    lsscripts = LSLogCheck(user_name=user_name,userpwd=user_pwd,connectstring=connectstring,tablelist=table_list)
+    result = lsscripts.checkalltables()
+    if result is True:
+        trigger_file_name = '05VeriLSLogTable.sql'
+        #复制到根目录以方便和其它程序的下载页面共享
+        shutil.copy(os.path.join(configure.DOWNLOAD_FOLDER, '05VeriLSLogTable.sql'),configure.APP_MAIN_FOLDER)
+        # 复制生成的压缩文件到下载目录
+
+        # 生成的脚本列表
+        filelist = [trigger_file_name]
+        return render_template('success.html', filenames=filelist)
+    else:
+        return render_template('fail.html')
+    pass
 
 @appserver.route('/dcportal', methods=['POST'])
 def dcportal():
