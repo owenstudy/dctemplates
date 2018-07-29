@@ -101,7 +101,7 @@ class ExtractData2Sql(object):
         new_column_name = column_name
         if data_type == 'DATE' or data_type[0:9] =='TIMESTAMP':
             new_column_name = "'to_date('''||"+"to_char({0},'yyyy/mm/dd')".format(column_name)+"||''',''yyyy/mm/dd'')' as {0}".format(column_name)
-        if data_type == 'VARCHAR2' or data_type == 'CHAR':
+        if data_type == 'VARCHAR2' or data_type == 'CHAR' or data_type == 'CLOB':
             new_column_name = "''''||"+column_name+"||'''' as {0}".format(column_name)
         else:
             new_column_name
