@@ -139,9 +139,9 @@ class ExtractData2Sql(object):
         all_sql = self.get_sqldata_all_tables(table_list,wheresql)
         pass
 if __name__ == '__main__':
-    # extractdata = ExtractData2Sql('ccic_cr_pa','ccic_cr_papwd','172.16.7.37:1522/c37u1')
-    extractdata = ExtractData2Sql('ual_ls_demo','ual_ls_demo','CN01L0201000282:1521/orcl')
-    extractdata.gen_sql_from_where_sql(' where policy_id>0')
+    extractdata = ExtractData2Sql('ccic_cr_pa','ccic_cr_papwd','172.16.7.37:1522/c37u1')
+    # extractdata = ExtractData2Sql('ual_ls_demo','ual_ls_demo','CN01L0201000282:1521/orcl')
+    extractdata.gen_sql_from_where_sql(' where policy_id<0')
     # extractdata.gen_all_table_sqls('-101158738985230')
     # extractdata.get_sqldata_by_table('T_CONTRACT_MASTER',' where 1=1')
     # selectsql = extractdata.get_select_sql('t_pa_pl_policy')
