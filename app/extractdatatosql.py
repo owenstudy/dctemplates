@@ -26,7 +26,7 @@ class ExtractData2Sql(object):
         pass
     # 获取某一个表的数据，根据提供的SQL语句
     def get_sqldata_by_table(self, table_name, wheresql):
-        selectsql = self.get_select_sql(table_name)[0]+ wheresql
+        selectsql = self.get_select_sql(table_name)[0]+' '+ wheresql
         column_list = self.get_select_sql(table_name)[1]
         sqldata = self.cursor.execute(selectsql).fetchall()
         # 对查询的结果进行处理，每一行生成一个insert语句
