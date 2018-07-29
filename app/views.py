@@ -17,6 +17,7 @@ from app.configure import sqlloader_configure
 from app.lstriggercheck import TriggerCheck
 from app import configure,template
 from app.lslogcheck import LSLogCheck
+from app.extractdatatosql import ExtractData2Sql
 
 # Initialize the Flask application
 # app = Flask(__name__)
@@ -172,6 +173,46 @@ def gen_trigger_script():
         trigger_file_name = '04TriggerCheck.sql'
         #复制到根目录以方便和其它程序的下载页面共享
         shutil.copy(os.path.join(configure.DOWNLOAD_FOLDER, '04TriggerCheck.sql'),configure.APP_MAIN_FOLDER)
+        # 复制生成的压缩文件到下载目录
+
+        # 生成的脚本列表
+        filelist = [trigger_file_name]
+        return render_template('success.html', filenames=filelist)
+    else:
+        return render_template('fail.html')
+# 调用生成表数据的insert sqls生成页面
+@appserver.route('/extracttablesql_ui', methods=['POST'])
+def extracttablesql_ui():
+
+    return render_template('extracttablesql_ui.html')
+# 生成表数据的insert sqls
+@appserver.route('/extracttablesql', methods=['POST'])
+def extracttablesql():
+    # 数据库连接信息
+    # src_user_name
+    src_user_name_list = request.values.getlist('user_name')
+    for s in src_user_name_list:
+        user_name = s
+    # src_user_pwd
+    src_user_pwd_list = request.values.getlist('user_pwd')
+    for s in src_user_pwd_list:
+        user_pwd = s
+    # connectstring
+    connectstring_list = request.values.getlist('connectstring')
+    for s in connectstring_list:
+        connectstring = s
+    tables = request.values.getlist('table_list')
+    tables_new = tables[0].split('\r\n')
+    table_list = []
+    for s in tables_new:
+        table_list.append(s)
+    # 生成脚本
+    extractsql = ExtractData2Sql(user_name=user_name,userpwd=user_pwd,connectstring=connectstring)
+    result = extractsql.gen_sql_from_where_sql(table_list[0])
+    if result is True:
+        trigger_file_name = 'SqlData.sql'
+        #复制到根目录以方便和其它程序的下载页面共享
+        shutil.copy(os.path.join(configure.DOWNLOAD_FOLDER, 'SqlData.sql'),configure.APP_MAIN_FOLDER)
         # 复制生成的压缩文件到下载目录
 
         # 生成的脚本列表

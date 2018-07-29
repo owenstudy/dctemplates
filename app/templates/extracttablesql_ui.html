@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="https://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+   <script src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
+
+    <title>Generate Insert SQLs from Tables</title>
+</head>
+<body>
+  <div class="container">
+   <div class="header">
+    <h3 class="text-muted">Generate Insert SQLs from Tables</h3>
+   </div>
+   <hr/>
+    <form id="form1" method="post" action="extracttablesql" enctype="multipart/form-data">
+      <div class="row">
+          <label><a href="#" class="tooltip-test" data-toggle="tooltip" title="抽取表数据的目标库oracle库的连接信息">
+              Database Connect Info</a></label>
+          <label class="col-sg-2">
+              <input type="text" class="form-control" name="user_name" placeholder="UserName">
+          </label>
+          <label class="col-sg-2">
+              <input type="text" class="form-control" name="user_pwd" placeholder="Password">
+          </label>
+          <label class="col-sg-2">
+              <input type="text" class="form-control" name="connectstring" placeholder="172.16.28.46:1523/o46g4">
+          </label>
+      </div>
+        <hr/>
+          <div class="form-group">
+                  <label><a href="#" class="tooltip-test" data-toggle="tooltip" title="抽取每个表数据的公共查询条件">
+                      Where Statement For Each Table Records</a></label>
+            <textarea class="form-control" name="table_list" rows="1" placeholder=" where policy_id<0"></textarea>
+          </div>
+      <hr/>
+
+   <div class="header">
+        <div>
+            <input type="submit" value="Generate Scripts"></input>
+
+        </div>
+   </div>
+   <hr/>
+    </form>
+   </div>
+
+</body>
+</html>

@@ -137,6 +137,7 @@ class ExtractData2Sql(object):
             table_list.append(eachtable[0])
 
         all_sql = self.get_sqldata_all_tables(table_list,wheresql)
+        return True
         pass
 if __name__ == '__main__':
     extractdata = ExtractData2Sql('ccic_cr_pa','ccic_cr_papwd','172.16.7.37:1522/c37u1')

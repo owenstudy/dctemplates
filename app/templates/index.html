@@ -70,6 +70,21 @@
    <form action="lslogcheck_ui" method="post" enctype="multipart/form-data">
     <input type="submit" value="LS Log Check Script Generate" class="span2">
    </form>
+    <!--日志抽取数据库表中的INSERT语句-->
+    <h3 class="text-muted">Generate Insert SQLs from Tables
+         <a href="#" class="tooltip-test" data-toggle="tooltip" title="
+        使用说明:
+        抽取数据库中表的INSERT语句，系统会根据条件抽取表中含有policy_id表的数据到SQL语句，以方便数据的迁移
+        输入：
+            1. 输入每个表需要抽取数据的条件，如policy_id<0(迁移保单）
+            2. 数据库链接
+        输出：生成所有表中含有policy_id表数据的INSERT语句，SQL语句可以重复执行
+     ">Help?</a>
+    </h3>
+   <hr/>
+   <form action="extracttablesql_ui" method="post" enctype="multipart/form-data">
+    <input type="submit" value="Generate Insert SQLs from Tables" class="span2">
+   </form>
     <!--报表的内容-->
    <hr/>
     <h3 class="text-muted">Reconciliation Report Upload(*.xlsx)
