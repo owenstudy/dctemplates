@@ -116,6 +116,9 @@ class ExtractData2Sql(object):
             sql = self.get_sqldata_by_table(table_name,wheresql)
             if sql is not None:
                 self.sqlfilehandler.write(sql)
+                self.sqlfilehandler.flush()
+        self.sqlfilehandler.close()
+        return True
             # all_sqls =all_sqls + sql
 
     # 根据保单的条件生成对应的SQL语句,自动查找需要生成的表,传入policy_id列表，用,分开
@@ -140,9 +143,9 @@ class ExtractData2Sql(object):
         return True
         pass
 if __name__ == '__main__':
-    extractdata = ExtractData2Sql('ccic_cr_pa','ccic_cr_papwd','172.16.7.37:1522/c37u1')
-    # extractdata = ExtractData2Sql('ual_ls_demo','ual_ls_demo','CN01L0201000282:1521/orcl')
-    extractdata.gen_sql_from_where_sql(' where policy_id<0')
+    # extractdata = ExtractData2Sql('ccic_cr_pa','ccic_cr_papwd','172.16.7.37:1522/c37u1')
+    extractdata = ExtractData2Sql('ual_ls_demo','ual_ls_demo','CN01L0201000282:1521/orcl')
+    extractdata.gen_sql_from_where_sql(' where policy_id=183392')
     # extractdata.gen_all_table_sqls('-101158738985230')
     # extractdata.get_sqldata_by_table('T_CONTRACT_MASTER',' where 1=1')
     # selectsql = extractdata.get_select_sql('t_pa_pl_policy')

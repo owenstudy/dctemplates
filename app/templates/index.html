@@ -1,120 +1,177 @@
 <!DOCTYPE html>
-<html lang="en">
- <head>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
-  <script src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
- </head>
- <body>
-  <div class="container">
-   <div class="header">
-    <h3 class="text-muted">Upload the data migration templates(*.xlsx)
-     <a href="#" class="tooltip-test" data-toggle="tooltip" title="
-        使用说明:
-        1. 只支持xlsx类型的excel,老格式的文件不支持，需要转换为最新的格式
-        2. 文件的格式必须是标准的格式，mapping columns sheet名称一定要是MappingColumns
-        3. MAPPING COLUMN的顺序必须是开始的前10列，顺序类型如下： Table Name	Column Name	Data Type	Length	Nullable Key	Short Description	Descirption of Data Migration	Default Value	Reference Table
-        4. 列的数据类型定义只支持三种类型的处理，DATE, NUMBER, VARCHAR2
-     校验结果说明:
-        针对Template的定义，生成相应的数据基础校验检查
-        A. 数字类型的校验
-        B. 日期类型的校验
-        C. 字符长度的校验
-        D. 外键表完整性校验(Reference Table中设置为外键表名.列名(如:DM_PARTY.PARTY_ID)的形式会生成外键值校验)
-        E. 主键值唯一性校验
-        F. 唯一键校验(一个表只支持一组组合唯一键校验，需要在Key列设置为字母U，所有标志为U的字段会自动生成
-     ">Format?</a>
-     <a href={{url_for('.static',_external=True, filename='TemplateSample_Mapping_Party.xlsx')}} class="tooltip-test" data-toggle="tooltip" title="样例文档">Sample?</a>
+<html>
+<head>
+	<meta charset="utf-8">
+	<link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="https://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<title>数据迁移常用功能</title>
+</head>
+<body>
+    <div class="list-group">
+        <!--Frist group-->
+        <a href="#" class="list-group-item active">
+            <h4 class="list-group-item-heading">
+                Data Migration Related Scripts
+            </h4>
+        </a>
+        <div class="row">
+            <!--Template scripts-->
+            <div class="col-sm-6 col-md-3">
+                    <div class="thumbnail">
+                        <img src="../static/Template.png"
+                             alt="通用的占位符缩略图">
+                        <div class="caption">
+                            <h3>Template Scripts</h3>
+                            <p>Create table, sql loader, verification scripts</p>
+                           <hr/>
+                            <p>
+                           <form action="upload" method="post" enctype="multipart/form-data">
+                           <input type="file" multiple="" name="file[]" class="span3" /><br/>
+                            <input type="submit" value="Upload" class="btn btn-primary" role="button">
+                                <a href="#" class="tooltip-test" data-toggle="tooltip" title="
+                                        使用说明:
+                                        1. 只支持xlsx类型的excel,老格式的文件不支持，需要转换为最新的格式
+                                        2. 文件的格式必须是标准的格式，mapping columns sheet名称一定要是MappingColumns
+                                        3. MAPPING COLUMN的顺序必须是开始的前10列，顺序类型如下： Table Name	Column Name	Data Type	Length	Nullable Key	Short Description	Descirption of Data Migration	Default Value	Reference Table
+                                        4. 列的数据类型定义只支持三种类型的处理，DATE, NUMBER, VARCHAR2
+                                     校验结果说明:
+                                        针对Template的定义，生成相应的数据基础校验检查
+                                        A. 数字类型的校验
+                                        B. 日期类型的校验
+                                        C. 字符长度的校验
+                                        D. 外键表完整性校验(Reference Table中设置为外键表名.列名(如:DM_PARTY.PARTY_ID)的形式会生成外键值校验)
+                                        E. 主键值唯一性校验
+                                        F. 唯一键校验(一个表只支持一组组合唯一键校验，需要在Key列设置为字母U，所有标志为U的字段会自动生成
+                                     ">Format?
+                                </a>
+                                <a href={{url_for('.static',_external=True, filename='TemplateSample_Mapping_Party.xlsx')}} class="tooltip-test" data-toggle="tooltip" title="样例文档">Sample?</a>
+                           </form>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            <!--Insert SQL for Scripts-->
+            <div class="col-sm-6 col-md-3">
+                <div class="thumbnail">
+                    <img src="../static/InsertSQL.png"
+                         alt="通用的占位符缩略图">
+                    <div class="caption">
+                        <h3>Insert SQL From Tables</h3>
+                        <p>Generate insert SQLs from tables with same policy_id</p>
+                       <hr/>
+                       <hr/>
+                        <p>
+                       <form action="extracttablesql_ui" method="post" enctype="multipart/form-data">
+                            <input type="submit" value="Generate Scripts" class="btn btn-primary" role="button">
+                             <a href="#" class="tooltip-test" data-toggle="tooltip" title="
+                            使用说明:
+                            抽取数据库中表的INSERT语句，系统会根据条件抽取表中含有policy_id表的数据到SQL语句，以方便数据的迁移
+                            输入：
+                                1. 输入每个表需要抽取数据的条件，如policy_id<0(迁移保单）
+                                2. 数据库链接
+                            输出：生成所有表中含有policy_id表数据的INSERT语句，SQL语句可以重复执行
+                         ">Help?</a>
+                       </form>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--Second group -->
+        <div class="list-group">
+            <a href="#" class="list-group-item active">
+                <h4 class="list-group-item-heading">
+                    Life and General related Scripts
+                </h4>
+            </a>
+                <div class="row">
+            <!--Life Log Script-->
+            <div class="col-sm-6 col-md-3">
+                <div class="thumbnail">
+                    <img src="../static/LogCheck.png"
+                         alt="通用的占位符缩略图">
+                    <div class="caption">
+                        <h3>Life Log Tables Verification</h3>
+                        <p>LS Log Check Script Generate</p>
+                       <hr/>
+                       <hr/>
+                       <hr/>
+                        <p>
+                           <form action="lslogcheck_ui" method="post" enctype="multipart/form-data">
+                            <input type="submit" value="Generate Scripts" class="btn btn-primary" role="button">
+                                 <a href="#" class="tooltip-test" data-toggle="tooltip" title="
+                                使用说明:
+                                检查寿险数据迁移中Log生成的数据是否和源表中一致
+                                输入：
+                                    1. 指定需要生成表的数据库连接信息
+                                    2. 需要生成表的列表
+                                输出：检查LOG表数据的脚本
+                                校验说明:
+                                1. 校验结果保存在表 dm_template_veri
+                             ">Help?</a>
+                            </form>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <!--Trigger scripts-->
+            <div class="col-sm-6 col-md-3">
+                <div class="thumbnail">
+                    <img src="../static/Trigger.png"
+                         alt="通用的占位符缩略图">
+                    <div class="caption">
+                        <h3>Trigger Verification</h3>
+                        <p>Generate the verification scripts from triggers</p>
+                       <hr/>
+                       <hr/>
+                       <hr/>
+                        <p>
+                        <form action="trigger_script_ui" method="post" enctype="multipart/form-data">
+                            <input type="submit" value="Generate Scripts" class="btn btn-primary" role="button">
+                             <a href="#" class="tooltip-test" data-toggle="tooltip" title="
+                            使用说明:
+                            根据寿险系统中存在的触发器自动生成校验迁移数据的存储过程脚本
+                            输入：
+                                1. 指定需要生成表的数据库连接信息
+                                2. 需要生成表的列表
+                            输出：触发器校验脚本
+                            校验说明：
+                            1. 校验结果保存在表 dc_trigger_check
+                         ">Help?</a>
+                       </form>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <!--Reconciliation report-->
+            <div class="col-sm-6 col-md-3">
+                <div class="thumbnail">
+                    <img src="../static/rrReport.png"
+                         alt="通用的占位符缩略图">
+                    <div class="caption">
+                        <h3>Reconciliation Report(RR)</h3>
+                        <p>RR compare summary and difference</p>
+                        <p>
+                        <hr/>
+                   <form action="rr_upload" method="post" enctype="multipart/form-data">
+                       <input type="file" multiple="" name="file[]" class="span3" /><br/>
+                        <input type="submit" value="Upload" class="btn btn-primary" role="button">
+                         <a href="#" class="tooltip-test" data-toggle="tooltip" title="
+                            使用说明:
+                            1. 按标准的报表模板准备语句及报表数据，本功能主要比较这两个sheet,[BRR_Target] --目标库的报表结果值,[BRR_SRC] --源系统的报表结果值
+                            2. 对数据迁移的对数报表进行比较，找到源和目标之间的差异
+                            2. 更新两个sheet,[ReportSummary],[ReportDiff]
+                         ">Format?</a>
+                         <a href={{url_for('.static',_external=True, filename='DataMigrationReconciliationReport_V2.5_LS.xlsx')}} class="tooltip-test" data-toggle="tooltip" title="样例文档">Sample?</a>
+                       </form>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    </h3>
-
-   </div>
-   <hr/>
-   <div>
-   <form action="upload" method="post" enctype="multipart/form-data">
-   <input type="file" multiple="" name="file[]" class="span3" /><br/>
-    <input type="submit" value="Upload" class="span2">
-   </form>
-   <hr/>
-    <h3 class="text-muted">Generate Verification Script from Triggers
-         <a href="#" class="tooltip-test" data-toggle="tooltip" title="
-        使用说明:
-        根据寿险系统中存在的触发器自动生成校验迁移数据的存储过程脚本
-        输入：
-            1. 指定需要生成表的数据库连接信息
-            2. 需要生成表的列表
-        输出：触发器校验脚本
-        校验说明：
-        1. 校验结果保存在表 dc_trigger_check
-     ">Help?</a>
-    </h3>
-   <hr/>
-   <form action="trigger_script_ui" method="post" enctype="multipart/form-data">
-    <input type="submit" value="Trigger Script Generate" class="span2">
-   </form>
-   <hr/>
-    <!--日志生成的调用页面-->
-    <h3 class="text-muted">Generate eBao Life Log Check Script
-         <a href="#" class="tooltip-test" data-toggle="tooltip" title="
-        使用说明:
-        检查寿险数据迁移中Log生成的数据是否和源表中一致
-        输入：
-            1. 指定需要生成表的数据库连接信息
-            2. 需要生成表的列表
-        输出：检查LOG表数据的脚本
-        校验说明:
-        1. 校验结果保存在表 dm_template_veri
-     ">Help?</a>
-
-    </h3>
-   <hr/>
-   <form action="lslogcheck_ui" method="post" enctype="multipart/form-data">
-    <input type="submit" value="LS Log Check Script Generate" class="span2">
-   </form>
-    <!--日志抽取数据库表中的INSERT语句-->
-    <h3 class="text-muted">Generate Insert SQLs from Tables
-         <a href="#" class="tooltip-test" data-toggle="tooltip" title="
-        使用说明:
-        抽取数据库中表的INSERT语句，系统会根据条件抽取表中含有policy_id表的数据到SQL语句，以方便数据的迁移
-        输入：
-            1. 输入每个表需要抽取数据的条件，如policy_id<0(迁移保单）
-            2. 数据库链接
-        输出：生成所有表中含有policy_id表数据的INSERT语句，SQL语句可以重复执行
-     ">Help?</a>
-    </h3>
-   <hr/>
-   <form action="extracttablesql_ui" method="post" enctype="multipart/form-data">
-    <input type="submit" value="Generate Insert SQLs from Tables" class="span2">
-   </form>
-    <!--报表的内容-->
-   <hr/>
-    <h3 class="text-muted">Reconciliation Report Upload(*.xlsx)
-     <a href="#" class="tooltip-test" data-toggle="tooltip" title="
-        使用说明:
-        1. 按标准的报表模板准备语句及报表数据，本功能主要比较这两个sheet,[BRR_Target] --目标库的报表结果值,[BRR_SRC] --源系统的报表结果值
-        2. 对数据迁移的对数报表进行比较，找到源和目标之间的差异
-        2. 更新两个sheet,[ReportSummary],[ReportDiff]
-     ">Format?</a>
-     <a href={{url_for('.static',_external=True, filename='DataMigrationReconciliationReport_V2.5_LS.xlsx')}} class="tooltip-test" data-toggle="tooltip" title="样例文档">Sample?</a>
-
-    </h3>
-
-   <form action="rr_upload" method="post" enctype="multipart/form-data">
-   <input type="file" multiple="" name="file[]" class="span3" /><br/>
-    <input type="submit" value="Reconciliation Report Upload" class="span2">
-   </form>
-   <hr/>
-
-   <form action="dcportal" method="post" enctype="multipart/form-data">
-    <input type="submit" value="dcportal demo" class="span2">
-   </form>
-  </div>
-  </div>
-
- <script>
-	$(function () { $("[data-toggle='tooltip']").tooltip(); });
-
-</script>
-
-
- </body>
+        </div>
+    </div>
+</body>
 </html>

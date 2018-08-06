@@ -210,13 +210,13 @@ def extracttablesql():
     extractsql = ExtractData2Sql(user_name=user_name,userpwd=user_pwd,connectstring=connectstring)
     result = extractsql.gen_sql_from_where_sql(table_list[0])
     if result is True:
-        trigger_file_name = 'SqlData.sql'
+        file_name = 'SqlData.sql'
         #复制到根目录以方便和其它程序的下载页面共享
-        shutil.copy(os.path.join(configure.DOWNLOAD_FOLDER, 'SqlData.sql'),configure.APP_MAIN_FOLDER)
+        shutil.copy(os.path.join(configure.DOWNLOAD_FOLDER, file_name),configure.APP_MAIN_FOLDER)
         # 复制生成的压缩文件到下载目录
 
         # 生成的脚本列表
-        filelist = [trigger_file_name]
+        filelist = [file_name]
         return render_template('success.html', filenames=filelist)
     else:
         return render_template('fail.html')
