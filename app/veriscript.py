@@ -419,7 +419,7 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
                     # 对于字符超过500的则用实际的长度
                     data_length_int = self.__get_data_length(row.length)
                     if row.dataType=='VARCHAR2' and data_length_int is not None:
-                        if data_length_int >=500:
+                        if data_length_int >=255:
                             one_column_list = '{0} CHAR({2}) \"TRIM(:{1})\",\n'.format(row.columnName.ljust(30),
                                                                             row.columnName.ljust(30),data_length_int)
                             all_column_list = all_column_list + one_column_list
