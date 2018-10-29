@@ -247,10 +247,10 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
             pk_column_list = ''
             for row in self.__mapping_column_list:
                 if row.tableName==table_name:
-                    #调整字段的长度，使脚本对齐美观
-                    script=script+row.columnName.ljust(30)
                     #为空的长度也都设置为默认300
                     try:
+                        # 调整字段的长度，使脚本对齐美观
+                        script = script + row.columnName.ljust(30)
                         #处理字段长度，如果是纯数字的，如果超过300则用定义的值，否则用默认值，确保有超过300长度的创建表是正确的
                         data_length=self.__get_data_length(row.length)
                         if data_length!=None:
@@ -611,7 +611,7 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
             where_sql = ' where f_is_date(%s)=1 and %s is not null' % (column_name, column_name)
         elif data_type == 'VARCHAR2' and data_length_int:
             veri_code = 'VERI_STRING_LENGTH_OVER_DEF'
-            where_sql = ' where length(%s)>%d and %s is not null' % (column_name, data_length_int, column_name)
+            where_sql = ' where lengthb(%s)>%d and %s is not null' % (column_name, data_length_int, column_name)
         else:
             need_verify=False
 
