@@ -190,8 +190,7 @@ class TriggerCheck(object):
                   commit;
               end;
            end loop;
-        end;\n
-        /\n
+        end;\n/\n
         """
         pk_name = self.get_pk_column(table_name)
         scripts = scripts.format(p_name =procedure_name, table_name = table_name, trigger_name = trigger_name,local_variable=local_variable,trigger_body=trigger_body, pk_name=pk_name)
