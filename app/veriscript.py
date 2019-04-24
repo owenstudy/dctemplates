@@ -546,7 +546,8 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
         need_verify = True
         veri_code = 'VERI_PRIMARY_KEY'
         # where_sql = ' where (select count(*) from {table_name}  b where 1=1  {connectcondi})>1 '
-        where_sql = ' (select count(*) from {table_name} group by {pk_column_list} having count(*) >1 )'
+        # 2019.4.24 adjust for verify sql
+        where_sql = ' (select {pk_column_list},count(*) from {table_name} group by {pk_column_list} having count(*) >1 )'
         one_connectcondi = ' and {table_name}.{column_name}=b.{column_name} '
         # all_connectcondi = ''
         # for pk_column in pk_column_list.split(','):
@@ -567,7 +568,9 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
             # 生成校验语句并把结果放到表中
             insert_result = self.__insert_result_sql
             # 校验的简化语句以方便直接使用查询
-            select_sql = 'select {column_name}  from {table_name} '.format(column_name=pk_column_list,table_name=table_name)+where_sql+';'
+            # select_sql = 'select {column_name}  from {table_name} '.format(column_name=pk_column_list,table_name=table_name)+where_sql+';'
+            # 2019.4.24 adjust for verify sql
+            select_sql = 'select *  from {table_name} '.format(table_name=where_sql)+';'
             veri_sql = 'select \'%s\' as module_name,\'%s\' as table_name,\'%s\' as column_name,\'%s\' as veri_code,count(*) as veri_result,\'%s\' as veri_sql from \n%s' % \
                        (module_name, table_name, pk_column_list, veri_code,select_sql, where_sql)
             veri_sql = insert_result + veri_sql + ';\n'
@@ -647,7 +650,9 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
         # where 条件SQL
         wheresql = wheresql.format(table_name=table_name, uni_column_list=uni_column_str[0:len(uni_column_str)-1])
         # 校验的简化语句以方便直接使用查询
-        select_sql = 'select * from {table_name} '.format(table_name=wheresql) + ';'
+        select_sql = 'select *  from {table_name} '.format(table_name=wheresql) + ';'
+        # 2019.4.24 udpated for wrong query sql statement
+        # select_sql = 'select * from {table_name} '.format(table_name=wheresql) + ';'
         # 选择语句
         unique_sql = 'select \'{module_name}\' as module_name, \'{table_name}\' as table_name,\'{column_name}\' as column_name,\'{veri_code}\' as VERI_CODE,count(*) as veri_result,\'{veri_sql}\' as veri_sql from {wheresql} \n '
         unique_sql = unique_sql.format(module_name=module_name,table_name=table_name,column_name=show_column_name,veri_code= veri_code,veri_sql = select_sql, wheresql=wheresql)
