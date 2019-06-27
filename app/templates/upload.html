@@ -90,7 +90,16 @@
           </label>
           <label><a href="#" class="tooltip-test" data-toggle="tooltip" title="创建表时统一增加的表前缀字符">Table Name Prefix</a></label>
           <label class="col-sg-2">
-              <input type="text" class="form-control" name="table_prefix" placeholder="">
+              <input type="text" class="form-control" name="table_prefix" placeholder="S_" value="S_">
+          </label>
+      </div>
+      <div class="row">
+          <label><a href="#" class="tooltip-test" data-toggle="tooltip" title="是否生成DC_开头数迁标准字段，包括表的主键和引用DM表的外键字段">Additional DC Columns(DC_xxx)</a></label>
+          <label class="radio-inline">
+                <input type="radio" name="additional_DC_columns"  value="False"   >  No
+          </label>
+          <label class="radio-inline">
+                <input type="radio" name="additional_DC_columns"  value="True" checked>  Yes
           </label>
       </div>
    <hr/>

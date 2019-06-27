@@ -63,7 +63,7 @@ class TemplateScript(object):
         create_table_script = create_table_script +\
             """
             create or replace view v_template_pass_rate_bymodule as 
-            select a.module_name, round(sum(a.pass_veri_cnt)/sum(a.total_veri_cnt),3) pass_rate from v_template_veri_pass_rate a
+            select a.module_name, round(sum(a.pass_veri_cnt)/sum(a.total_veri_cnt),3) pass_rate from v_template_pass_rate_bytable a
              group by module_name ;\n 
             """
 
@@ -158,7 +158,48 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
         """
 
         return public_function_script
-    '''生成创建template表的脚本'''
+    '''
+        2019.6.26 增加同时生成真实的数据类型的列表，即使是虚拟类型的选项也同时生成DM开头的真实数据结构列表
+        通过修改配置参数来生成真正数据类型的创建表结构，生成之后恢复到原来的参数设置
+    '''
+    def __create_template_script_datatype_real_type(self):
+        # 如果是不需要生成字段的选项选中则不执行
+        if configure.create_table_configure.get('additional_DC_columns') is False:
+            return ''
+        # 保存配置对象中的值到临时变更
+        old_table_prefix=configure.create_table_configure.get('table_prefix')
+        old_real_data_type = configure.create_table_configure.get('real_data_type')
+        # 设置配置值到真正的配置
+        configure.create_table_configure['table_prefix']=''
+        configure.create_table_configure['real_data_type'] = True
+
+        # 生成DM表真实结构的脚本
+        dm_script = self.__create_template_script_datatype()
+        # 恢复临时变量的值到配置对象中
+        configure.create_table_configure['table_prefix']=old_table_prefix
+        configure.create_table_configure['real_data_type'] = old_real_data_type
+
+        return dm_script
+
+        pass;
+    '''生成额外需要添加的DC迁移字段, 传入需要处理的字段名和引用的外键表'''
+    def __get_additional_DC_columns(self, table_name, column_name, refer_tablename):
+        if configure.create_table_configure.get('additional_dc_columns') is False or column_name =='':
+            return ''
+        dc_PK_script = ' alter table {table_name} add DC_{pk_column} number(19);'
+        pk_comments = '------Auto add the DC internal columns------\n'
+        additional_scripts = ''
+        additional_scripts = pk_comments + dc_PK_script.format(table_name=table_name, pk_column=column_name)
+        # 添加有引用DM表外键的DC字段
+        if refer_tablename is not None:
+            # 外键表是DM开头的才会额外增加DC开头的字段
+            if refer_tablename[0:2] == 'DM':
+                additional_scripts = pk_comments + dc_PK_script.format(table_name=table_name, pk_column=column_name)
+                pass
+        additional_scripts = additional_scripts +'\n\n'
+        return additional_scripts
+    '''生成创建template表的脚本
+    '''
     def __create_template_script_datatype(self):
         script=None
         all_table_script=''
@@ -167,6 +208,8 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
             script='drop table '+newtable_name+';\n'
             script=script+'create table '+newtable_name +'(\n'
             pk_column_list = ''
+            # 有引用DM表外键的字段列表
+            fk_column_list = ''
             for row in self.__mapping_column_list:
                 if row.tableName==table_name:
                     #调整字段的长度，使脚本对齐美观
@@ -201,6 +244,11 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
                             pk_column_list = pk_column_list + row.columnName + ','
                         else:
                             primary_key=''
+                        # 2019.6.27 生成有DM外键表的字段列表
+                        if row.referTable is not None:
+                            if row.referTable[0:2]=='DM':
+                                fk_column_list = fk_column_list + row.columnName + ','
+
                         # 判断数据类型，为不同的类型生成相应的脚本
                         if row.dataType=='DATE':
                             col_str=' date'
@@ -234,8 +282,25 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
                 index_sql = index_sql.format(index_name = index_name, table_name = newtable_name, pk_column_list = pk_column_list[0:len(pk_column_list)-1])
                 script = script + index_sql + '\n'
             all_table_script=all_table_script+script+'\n'
+
+            # 2019.6.26 对于PK字段生成一个DC开头的字段，以便在生成T表的时候用这个字段来导入
+            if pk_column_list != '':
+                additional_script = ''
+                for pk_column in pk_column_list.split(','):
+                    additional_script = additional_script + self.__get_additional_DC_columns(newtable_name,pk_column,'')
+                all_table_script = all_table_script + additional_script
+            # 处理有DM外键的字段，加个DC开头的额外字段
+            if fk_column_list != '':
+                additional_script = ''
+                for fk_column in fk_column_list.split(','):
+                    # 排除既是主键又有FK引用的情况
+                    if fk_column in pk_column_list: continue
+                    additional_script = additional_script + self.__get_additional_DC_columns(newtable_name,fk_column,'')
+                all_table_script = all_table_script + additional_script
+
         return all_table_script
         pass
+
     '''生成创建template表的脚本'''
     def __create_template_script(self):
         script=None
@@ -245,6 +310,8 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
             script='drop table '+newtable_name+';\n'
             script=script+'create table '+newtable_name +'(\n'
             pk_column_list = ''
+            # 有引用DM表外键的字段列表
+            fk_column_list = ''
             for row in self.__mapping_column_list:
                 if row.tableName==table_name:
                     #为空的长度也都设置为默认300
@@ -268,6 +335,10 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
                             pk_column_list = pk_column_list + row.columnName+','
                         else:
                             primary_key=''
+                        # 2019.6.27 生成有DM外键表的字段列表
+                        if row.referTable is not None:
+                            if row.referTable[0:2]=='DM':
+                                fk_column_list = fk_column_list + row.columnName + ','
                         # script = script + ' varchar2(%d) %s'%(col_len,primary_key)
                         script = script + ' varchar2(%d) ' % (col_len)
                     except Exception as e:
@@ -288,8 +359,23 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
                 index_sql = 'create index {index_name} on {table_name} ({pk_column_list});\n'
                 index_sql = index_sql.format(index_name = index_name, table_name = newtable_name, pk_column_list = pk_column_list[0:len(pk_column_list)-1])
                 script = script + index_sql + '\n'
+            all_table_script = all_table_script + script + '\n'
 
-            all_table_script = all_table_script+script+'\n'
+            # 2019.6.26 对于PK字段生成一个DC开头的字段，以便在生成T表的时候用这个字段来导入
+            if pk_column_list != '':
+                additional_script = ''
+                for pk_column in pk_column_list.split(','):
+                    additional_script = additional_script + self.__get_additional_DC_columns(newtable_name,pk_column,'')
+                all_table_script = all_table_script + additional_script
+            # 处理有DM外键的字段，加个DC开头的额外字段
+            if fk_column_list != '':
+                additional_script = ''
+                for fk_column in fk_column_list.split(','):
+                    # 排除既是主键又有FK引用的情况
+                    if fk_column in pk_column_list: continue
+                    additional_script = additional_script + self.__get_additional_DC_columns(newtable_name,fk_column,'')
+                all_table_script = all_table_script + additional_script
+
         return all_table_script
         pass
 
@@ -728,10 +814,27 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
         filenameonly = file_name.split('/')[-1]
         script_file.write("spool {0}.log\n".format(filenameonly))
         # Template表的创建脚本
+        # 2019.6.26 调整生成s_开头的一套脚本，s_开头的非真正数据类型+DM开头的有数据类型的脚本，作为DC的标准脚本
+        dm_script_split= '\n------*** DM real data type structure to be generate automatically to follow data migration standard ***------\n'
         if need_data_type is False:
-            create_table_script_template=self.__create_template_script()
+            # 针对非真实数据类型并且有前缀的情况下生成额外的dm_表结构脚本
+            if configure.create_table_configure.get('table_prefix') != "":
+                create_table_script_template=self.__create_template_script()
+                # dm_一套真实数据类型表结构
+                create_table_script_template= create_table_script_template + dm_script_split + self.__create_template_script_datatype_real_type()
+                pass
+            else:
+                # 针对没有前缀只生成DM的真正的表结构，防止重复生成
+                create_table_script_template=self.__create_template_script()
         else:
-            create_table_script_template = self.__create_template_script_datatype()
+            if configure.create_table_configure.get('table_prefix') != "":
+                create_table_script_template = self.__create_template_script()
+                # dm_一套真实数据类型表结构
+                create_table_script_template = create_table_script_template + dm_script_split + self.__create_template_script_datatype_real_type()
+                pass
+            else:
+                # 针对没有前缀只生成DM的真正的表结构，防止重复生成
+                create_table_script_template = self.__create_template_script_datatype()
 
         script_file.write(create_table_script_template)
         script_file.write("\nspool off")
@@ -783,10 +886,10 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
 if __name__=='__main__':
 
 
-    script=TemplateScript('./1.Template_Mapping_Party_V0.9_DM.xlsx')
+    script=TemplateScript('./BNI_Mapping_Party_V0.4.0.xlsx')
 
     # script.get_unique_sql('ilp','DM_CONTRACT_INVEST_RATE','item_id,account_code,prem_type')
     script.clear_sqlldr_file()
     script.gen_control_files()
-    # script.save_template_create_script()
+    script.save_template_create_script('test')
     # script.save_script('party.sql')

@@ -337,6 +337,10 @@ def script_options(request):
     table_prefix = request.values.getlist('table_prefix')
     for s in table_prefix:
         configure.create_table_configure['table_prefix'] = s
+    # 2019.6.27 additional columns
+        additional_DC_columns = request.values.getlist('additional_DC_columns')
+    for s in additional_DC_columns:
+        configure.create_table_configure['additional_DC_columns'] = __strtobool(s)
     # 数据库连接信息
     # src_user_name
     src_user_name = request.values.getlist('src_user_name')

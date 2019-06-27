@@ -8,15 +8,16 @@ sqlloader_configure = {"file_name_ext": "csv", "terminated_by":",", "enclosed_by
                        'tar_user_name':''}
 
 # sqlloader的选项列表
-file_name_ext_list = [ 'txt','csv']
+file_name_ext_list = [ 'csv','txt']
 terminated_by_list = ['TAB',',']
-enclosed_by_list = ['None','|','"']
+enclosed_by_list = ['None','"','|']
 append_type_list = ['append', 'replace']
 nls_lang_list = ['AMERICAN_AMERICA.AR8MSWIN1256','AMERICAN_AMERICA.ZHS16GBK','AMERICAN_AMERICA.AL32UTF8']
 
 # real_data_type 生成创建中间表的控制选项, 真实的数据类型或者实际定义的数据类型,
 # table_prefix 创建表时加的前缀，为了支持一些项目需要加一个表名前缀
-create_table_configure = {"real_data_type": False, "table_prefix":""}
+# 2019.6.27 增加自动添加数迁需要的主外键的额外字段以方便迁移，客户提供的主外键不在系统中使用, additional_dc_columns默认为添加
+create_table_configure = {"real_data_type": False, "table_prefix":"",  "additional_DC_columns": True}
 
 # 生成脚本的一些公共通用配置信息
 script_public_configure = {'os':'win'}
