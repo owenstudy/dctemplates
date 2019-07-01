@@ -17,7 +17,8 @@ nls_lang_list = ['AMERICAN_AMERICA.AR8MSWIN1256','AMERICAN_AMERICA.ZHS16GBK','AM
 # real_data_type 生成创建中间表的控制选项, 真实的数据类型或者实际定义的数据类型,
 # table_prefix 创建表时加的前缀，为了支持一些项目需要加一个表名前缀
 # 2019.6.27 增加自动添加数迁需要的主外键的额外字段以方便迁移，客户提供的主外键不在系统中使用, additional_dc_columns默认为添加
-create_table_configure = {"real_data_type": False, "table_prefix":"",  "additional_DC_columns": True}
+# 是否在数据加载完成后做schema的统计分析 analyze_schema
+create_table_configure = {"real_data_type": False, "table_prefix":"",  "additional_DC_columns": True, "analyze_schema": True}
 
 # 生成脚本的一些公共通用配置信息
 script_public_configure = {'os':'win'}

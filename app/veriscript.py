@@ -4,7 +4,7 @@
 __author__ = 'Owen_Study/owen_study@126.com'
 
 import re,os, shutil
-from  app import template, configure
+from  app import template, configure, public_init_script
 
 ''' 传入mapping column list列表'''
 class TemplateScript(object):
@@ -175,6 +175,9 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
 
         # 生成DM表真实结构的脚本
         dm_script = self.__create_template_script_datatype()
+        # 2019.7.1 保存生成的table list 到dc_all_tables
+        insert_all_table_script = self.__get_dc_all_tables_insertsql()
+        dm_script = dm_script + insert_all_table_script
         # 恢复临时变量的值到配置对象中
         configure.create_table_configure['table_prefix']=old_table_prefix
         configure.create_table_configure['real_data_type'] = old_real_data_type
@@ -198,6 +201,21 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
                 pass
         additional_scripts = additional_scripts +'\n\n'
         return additional_scripts
+    '''2019.7.1 保存从template抽取出来的表到dc_all_tables'''
+    def __get_dc_all_tables_insertsql(self):
+        insert_sql = '------****** Insert SQL for DC_ALL_TABLES ******------\n'
+        create_table_sql = public_init_script.init_dc_all_tables
+        for table_name in self.__table_list:
+            newtable_name = configure.create_table_configure.get('table_prefix')+table_name
+            # 根据表的前缀来判断是进Source还是DM的category, dc_all_tables
+            if newtable_name == table_name:
+                insert_sql = insert_sql +  public_init_script.init_insert_dc_all_tables.format(table_name=table_name,table_category='TEMPLATE')
+            else:
+                insert_sql = insert_sql +  public_init_script.init_insert_dc_all_tables.format(table_name=newtable_name,table_category='SOURCE')
+        pass
+        all_sql = create_table_sql + insert_sql
+        return all_sql
+
     '''生成创建template表的脚本
     '''
     def __create_template_script_datatype(self):
@@ -532,6 +550,7 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
         # 保存sqlldr的执行文件到文件中，保存两个版本，一个是windows，一个是linux
         self.__save_sqlldr(sqlldr_scripts,'win', nls_lang)
         self.__save_sqlldr(sqlldr_scripts,'linux', nls_lang)
+
         # print(control_file_content)
 
         return all_column_list
@@ -789,6 +808,12 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
             total_veri_sql = total_veri_sql + unique_sql
             pass
         total_veri_sql= total_veri_sql+'\n commit;\n'
+        # 2019.7.1 生成统计分析的脚本
+        if configure.create_table_configure.get('analyze_schema') is True:
+            analyze_script = "---*** Analyze source schema before verification ***---\n"
+            analyze_script = analyze_script+ 'exec dbms_stats.gather_schema_stats('');\n'
+            total_veri_sql = analyze_script + total_veri_sql
+            pass
 
         return total_veri_sql
         pass
@@ -820,6 +845,9 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
             # 针对非真实数据类型并且有前缀的情况下生成额外的dm_表结构脚本
             if configure.create_table_configure.get('table_prefix') != "":
                 create_table_script_template=self.__create_template_script()
+                # 2019.7.1 保存生成的table list 到dc_all_tables
+                insert_all_table_script = self.__get_dc_all_tables_insertsql()
+                create_table_script_template = create_table_script_template + insert_all_table_script
                 # dm_一套真实数据类型表结构
                 create_table_script_template= create_table_script_template + dm_script_split + self.__create_template_script_datatype_real_type()
                 pass
@@ -829,6 +857,9 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
         else:
             if configure.create_table_configure.get('table_prefix') != "":
                 create_table_script_template = self.__create_template_script()
+                # 2019.7.1 保存生成的table list 到dc_all_tables
+                insert_all_table_script = self.__get_dc_all_tables_insertsql()
+                create_table_script_template = create_table_script_template + insert_all_table_script
                 # dm_一套真实数据类型表结构
                 create_table_script_template = create_table_script_template + dm_script_split + self.__create_template_script_datatype_real_type()
                 pass
@@ -888,6 +919,8 @@ if __name__=='__main__':
 
     script=TemplateScript('./BNI_Mapping_Party_V0.4.0.xlsx')
 
+    # sql = script.get_dc_all_tables_insertsql()
+    # print(sql)
     # script.get_unique_sql('ilp','DM_CONTRACT_INVEST_RATE','item_id,account_code,prem_type')
     script.clear_sqlldr_file()
     script.gen_control_files()
