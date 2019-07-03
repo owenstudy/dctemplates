@@ -14,16 +14,25 @@
 '''创建表的语句，每个表一个变量说明'''
 
 #DC迁移用到的表,如果表已经存在则忽略创建，不删除，因为表中的目标数据是额外维护的
-init_dc_all_tables = '''
+init_dc_all_tables = """
 create table dc_all_tables  
   (table_name                varchar2(30) primary key,
-   table_category           varchar2(20) not null,  --只能为这3个值： SOURCE/DM/TARGET
-   module                      varchar2(20)    ,            --module: 读ODI数据字典自动维护 
+   table_category           varchar2(20) not null,  
+   module                       varchar2(20)    ,            
    number_of_all            number(15)     ,
-   number_of_passed    number(15)     ,            --业务规则校验：验证通过的记录数
-   number_of_initial       number(15)                  --number_of_initial用于保存target表导数前的记录数              
-  );\n
-'''
+   number_of_passed    number(15)     ,           
+   number_of_initial       number(15)     ,
+   from_dataset              varchar2(300)  ,   
+   number_of_dataset    number(15)  
+  ) nologging;
+comment on column dc_all_tables.table_category  is '只能为这3个值： SOURCE/TEMPLATE/TARGET';
+comment on column dc_all_tables.module  is '所属模组，读ODI数据字典自动维护';
+comment on column dc_all_tables.number_of_passed  is '通过业务规则校验的记录数，ODI脚本自动维护';
+comment on column dc_all_tables.number_of_initial  is '用于保存初始的记录数，ODI脚本自动维护';
+comment on column dc_all_tables.from_dataset  is '来源数据集，多数表对应的dataset是table，少数是subquery; SOURCE表的来源数据集为空';
+comment on column dc_all_tables.number_of_dataset  is '来源数据集的记录数，ODI脚本自动维护';
+ \n
+"""
 # 生成DC_all_tables的insert 语句
 init_insert_dc_all_tables = """insert into dc_all_tables (table_name,table_category) select '{table_name}','{table_category}' from dual 
     where not exists(select 1 from dc_all_tables x where x.table_name='{table_name}' and x.table_category='{table_category}');\n"""
