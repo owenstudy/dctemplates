@@ -137,8 +137,42 @@ def merge_rrreport():
     # 返回生成的文件
     # filenames = 'sample.xlsx'
     # 复制到根目录以方便下载
-
     return render_template('rr_download.html', filenames=files)
+
+# 2019.7.3 生成校验语句的insert语句，生成insert脚本文件
+@appserver.route('/validation_upload', methods=['POST'])
+def validation_upload():
+    # Get the name of the uploaded files
+    uploaded_files = request.files.getlist("file[]")
+    filenames = []
+    # 清除已经存在的文件列表
+    clean_dir(configure.UPLOADS_FOLDER)
+    clean_dir(configure.DOWNLOAD_FOLDER)
+    # 加载选择的文件
+    for file in uploaded_files:
+        # Check if the file is one of the allowed types/extensions
+        if file and allowed_file(file.filename):
+            # Make the filename safe, remove unsupported chars
+            filename = secure_filename(file.filename)
+            # Move the file form the temporal folder to the upload
+            # folder we setup
+            # file.save(os.path.join(appserver.config['DOWNLOAD_FOLDER'], filename))
+            file.save(os.path.join(appserver.config['UPLOADS_FOLDER'], filename))
+            # file.save(os.path.join(appserver.config['DOWNLOAD_FOLDER'], filename))
+            # Save the filename into a list, we'll use it later
+            filenames.append(filename)
+            # Redirect the user to the uploaded_file route, which
+            # will basicaly show on the browser the uploaded file
+    # 生成insert sql文件到download folder
+    for file in os.listdir(configure.UPLOADS_FOLDER):
+        validation_script = template.DCVerifySQL(os.path.join(configure.UPLOADS_FOLDER,filename))
+        validation_script.gen_script_file()
+    # 遍历download目录，把文件传递到下载页面进行下载
+    file_path=configure.DOWNLOAD_FOLDER
+    files=os.listdir(file_path)
+
+    return render_template('success.html', filenames=files)
+    pass
 
 # 调用触发器脚本生成页面
 @appserver.route('/trigger_script_ui', methods=['POST'])

@@ -52,6 +52,34 @@
                         </div>
                     </div>
                 </div>
+            <!--Insert SQL for Validation, 2019.7.2-->
+            <div class="col-sm-6 col-md-3">
+                <div class="thumbnail">
+                    <img src="../static/Validation.png"
+                         alt="通用的占位符缩略图">
+                    <div class="caption">
+                        <h3>Validation Script Loading</h3>
+                        <p>Geneate the insert sql of dc_validation</p>
+                        <p>
+                        <hr/>
+                   <form action="validation_upload" method="post" enctype="multipart/form-data">
+                       <input type="file" multiple="" name="file[]" class="span3" /><br/>
+                        <input type="submit" value="Generate Scripts" class="btn btn-primary" role="button">
+                         <a href="#" class="tooltip-test" data-toggle="tooltip" title="
+                            使用说明:
+                            根据DC标准的校验结构excel，把excel的校验语句生成insert语句，执行到数据库表dc_validation
+                            输入：
+                                1. DC_Validaton.xlsx的校验语句文件
+                            输出：脚本文件，包括下面两项
+                                1. 创建表dc_validation的语句
+                                2. insert每个校验语句到数据库表dc_validation
+                         ">Format?</a>
+                         <a href={{url_for('.static',_external=True, filename='DC_VALIDATION.xlsx')}} class="tooltip-test" data-toggle="tooltip" title="样例文档">Sample?</a>
+                       </form>
+                        </p>
+                    </div>
+                </div>
+            </div>
             <!--Insert SQL for Scripts-->
             <div class="col-sm-6 col-md-3">
                 <div class="thumbnail">

@@ -28,7 +28,44 @@ create table dc_all_tables
 init_insert_dc_all_tables = """insert into dc_all_tables (table_name,table_category) select '{table_name}','{table_category}' from dual 
     where not exists(select 1 from dc_all_tables x where x.table_name='{table_name}' and x.table_category='{table_category}');\n"""
 
-
+# 生成DC校验的表结构，主要是指手工维护的一些逻辑校验
+init_dc_validation = """
+        drop table dc_validation;
+        create table dc_validation
+        (
+          sn                     number(5) primary key,
+          module             varchar2(100) not null,
+          in_project         varchar2(100) default 'Y' not null,   
+          priority              varchar2(1)     not null,  
+          error_code       varchar2(100),  
+          table_name      varchar2(500) not null,  
+          column_name  varchar2(500),
+          description       varchar2(4000) not null,
+          sql_for_source varchar2(4000),
+          sql_for_target   varchar2(4000),
+          remark              varchar2(4000),   
+          temp_skip         varchar2(10)  default 'N' not null, 
+          rule_from          varchar2(200)  not null,
+          results_source number(19),           
+          results_target   number(19),           
+          run_duration     number(19,2),
+          run_date           date
+        );\n
+        comment on column dc_validation.sn  is '主键序号';
+        comment on column dc_validation.in_project  is 'Y(适用当前项目，要执行) / N(不适用于当前项目)';
+        comment on column dc_validation.priority  is '检核规则的优先级: H/M/L)';
+        comment on column dc_validation.table_name  is '统一放T表名称';
+        comment on column dc_validation.temp_skip  is ' Y(适用当前项目的前提下，会临时跳过不执行) / N(不临时跳过)';
+        comment on column dc_validation.rule_from  is ' 检核规则的来源说明，比如defect no / BSD名称 / dc baseline等等';
+        comment on column dc_validation.results_source  is '结果为负数表示校验语句执行报错；这里的source指S_DM表结构的da';
+        \n
+        """
+init_insert_dc_validation = """
+insert into dc_validation (SN,MODULE,IN_PROJECT,PRIORITY,ERROR_CODE,TABLE_NAME,COLUMN_NAME,DESCRIPTION,SQL_FOR_SOURCE,SQL_FOR_TARGET,REMARK,TEMP_SKIP,RULE_FROM)
+ values (
+ '{SN}','{MODULE}','{IN_PROJECT}','{PRIORITY}','{ERROR_CODE}','{TABLE_NAME}','{COLUMN_NAME}','{DESCRIPTION}','{SQL_FOR_SOURCE}','{SQL_FOR_TARGET}','{REMARK}','{TEMP_SKIP}','{RULE_FROM}'
+);\n
+"""
 
 if __name__ == '__main__':
     pass
