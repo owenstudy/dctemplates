@@ -15,7 +15,7 @@ from app.common import clean_dir, zip_dir
 from app.scripttofile import generate_all_scripts
 from app.configure import sqlloader_configure
 from app.lstriggercheck import TriggerCheck
-from app import configure,template
+from app import configure,template, public_init_script
 from app.lslogcheck import LSLogCheck
 from app.extractdatatosql import ExtractData2Sql
 
@@ -168,9 +168,9 @@ def validation_upload():
         validation_script = template.DCVerifySQL(os.path.join(configure.UPLOADS_FOLDER,filename))
         validation_script.gen_script_file()
     # 遍历download目录，把文件传递到下载页面进行下载
-    shutil.copy(os.path.join(configure.DOWNLOAD_FOLDER, '01logic_verification.sql'), configure.APP_MAIN_FOLDER)
+    shutil.copy(os.path.join(configure.DOWNLOAD_FOLDER, public_init_script.validation_file_name), configure.APP_MAIN_FOLDER)
     file_path=configure.DOWNLOAD_FOLDER
-    files=['01logic_verification.sql']
+    files=[public_init_script.validation_file_name]
 
     return render_template('success.html', filenames=files)
     pass

@@ -67,5 +67,9 @@ insert into dc_validation (SN,MODULE,IN_PROJECT,PRIORITY,ERROR_CODE,TABLE_NAME,C
 );\n
 """
 
+# 公共的文件名称
+# 逻辑校验脚本的文件名称
+validation_file_name = '03logic_verification.sql'
+
 if __name__ == '__main__':
     pass

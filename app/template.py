@@ -355,7 +355,7 @@ class DCVerifySQL(object):
         self.__file_name=file_name
         self.excel_handler=openpyxl.load_workbook(file_name, data_only=True)
         self.__ignore_strike_row=ignore_strike_row
-        self.__sql_file_handler = open(os.path.join(configure.DOWNLOAD_FOLDER,'01logic_verification.sql'),'w')
+        self.__sql_file_handler = open(os.path.join(configure.DOWNLOAD_FOLDER,public_init_script.validation_file_name),'w')
     # 生成校验语句的表，保存excel中定义的校验语句
     def __create_verify_log_table(self):
         # 创建表dc_validation的脚本
@@ -431,7 +431,7 @@ class DCVerifySQL(object):
     # 2019.7.3 生成脚本文件
     def gen_script_file(self):
         filenameonly = self.__file_name.split('/')[-1]
-        self.__sql_file_handler.write("spool {0}.log\n".format('01logic_verification'))
+        self.__sql_file_handler.write("spool {0}.log\n".format(public_init_script.validation_file_name.split('.')[0]))
         # 生成insert sql
         insert_sql = self.get_all_sqls()
         self.__sql_file_handler.write(insert_sql)
