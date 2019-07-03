@@ -168,8 +168,9 @@ def validation_upload():
         validation_script = template.DCVerifySQL(os.path.join(configure.UPLOADS_FOLDER,filename))
         validation_script.gen_script_file()
     # 遍历download目录，把文件传递到下载页面进行下载
+    shutil.copy(os.path.join(configure.DOWNLOAD_FOLDER, '01logic_verification.sql'), configure.APP_MAIN_FOLDER)
     file_path=configure.DOWNLOAD_FOLDER
-    files=os.listdir(file_path)
+    files=['01logic_verification.sql']
 
     return render_template('success.html', filenames=files)
     pass
