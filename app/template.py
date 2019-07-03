@@ -421,6 +421,7 @@ class DCVerifySQL(object):
                 RULE_FROM=eachvalidation['RULE_FROM         '.strip()], \
                 )
             all_insert_sql = all_insert_sql + insert_sql
+        all_insert_sql = all_insert_sql + 'commit;\n'
         return all_insert_sql
         pass
     # 生成dc_validation表的创建表语句 及insert 语句
