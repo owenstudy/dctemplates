@@ -116,7 +116,7 @@ insert into dc_reconciliation_script (BRR_Status,SN,Module,BRR_CODE,BRR_Desc,BRR
 # 公共的文件名称
 # 逻辑校验脚本的文件名称
 validation_file_name = 'business_rule_verification.sql'
-reconciliation_file_name = 'reconciliation_verification.sql'
+reconciliation_file_name = 'reconciliation_report.sql'
 # Trigger生成的脚本文件名字
 trigger_file_name = 'trigger_verification.sql'
 
