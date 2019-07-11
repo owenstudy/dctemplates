@@ -39,34 +39,37 @@ init_insert_dc_all_tables = """insert into dc_all_tables (table_name,table_categ
 
 # 生成DC校验的表结构，主要是指手工维护的一些逻辑校验
 init_dc_validation = """
-        drop table dc_validation;
-        create table dc_validation
-        (
-          sn                     number(5) primary key,
-          module             varchar2(100) not null,
-          in_project         varchar2(100) default 'Y' not null,   
-          priority              varchar2(1)     not null,  
-          error_code       varchar2(100),  
-          table_name      varchar2(500) not null,  
-          column_name  varchar2(500),
-          description       varchar2(4000) not null,
-          sql_for_source varchar2(4000),
-          sql_for_target   varchar2(4000),
-          remark              varchar2(4000),   
-          temp_skip         varchar2(10)  default 'N' not null, 
-          rule_from          varchar2(200)  not null,
-          results_source number(19),           
-          results_target   number(19),           
-          run_duration     number(19,2),
-          run_date           date
-        );\n
-        comment on column dc_validation.sn  is '主键序号';
-        comment on column dc_validation.in_project  is 'Y(适用当前项目，要执行) / N(不适用于当前项目)';
-        comment on column dc_validation.priority  is '检核规则的优先级: H/M/L)';
-        comment on column dc_validation.table_name  is '统一放T表名称';
-        comment on column dc_validation.temp_skip  is ' Y(适用当前项目的前提下，会临时跳过不执行) / N(不临时跳过)';
-        comment on column dc_validation.rule_from  is ' 检核规则的来源说明，比如defect no / BSD名称 / dc baseline等等';
-        comment on column dc_validation.results_source  is '结果为负数表示校验语句执行报错；这里的source指S_DM表结构的da';
+create table dc_validation
+(
+  sn                     number(5) primary key,
+  module             varchar2(100) not null,
+  in_project         varchar2(100) default 'Y' not null,   
+  priority              varchar2(1)     not null,  
+  error_code       varchar2(100),  
+  table_name      varchar2(500) not null,  
+  column_name  varchar2(500),
+  description       varchar2(4000) not null,
+  sql_for_source varchar2(4000),
+  sql_for_target   varchar2(4000),
+  remark              varchar2(4000),   
+  temp_skip         varchar2(10)  default 'N' not null, 
+  rule_from          varchar2(200)  not null,
+  results_source number(19),           
+  results_target   number(19),           
+  run_duration_source     number(19,2),
+  run_duration_target     number(19,2),
+  run_date           date
+) nologging;
+comment on column dc_validation.sn  is '主键序号';
+comment on column dc_validation.in_project  is 'Y(适用当前项目，要执行) / N(不适用于当前项目)';
+comment on column dc_validation.priority  is '检核规则的优先级: H/M/L)';
+comment on column dc_validation.table_name  is '如果规则能在T表校验，就写T表名；否则才写源表名';
+comment on column dc_validation.temp_skip  is ' Y(适用当前项目的前提下，会临时跳过不执行) / N(不临时跳过)';
+comment on column dc_validation.rule_from  is ' 检核规则的来源说明，比如defect no / BSD名称 / dc baseline等等';
+comment on column dc_validation.results_source  is '结果为负数表示校验语句执行报错；这里的source指S_DM表结构的data 或 Legacy表结构的data';
+comment on column dc_validation.results_target  is '结果为负数表示校验语句执行报错';
+comment on column dc_validation.run_duration_source  is '源数据检核脚本执行时长';
+comment on column dc_validation.run_date  is '检核规则最近执行日期，不区分source/target';
         \n
         """
 init_insert_dc_validation = """
@@ -77,33 +80,33 @@ insert into dc_validation (SN,MODULE,IN_PROJECT,PRIORITY,ERROR_CODE,TABLE_NAME,C
 """
 # 生成DCReconciliation report的表结构，主要是指business reconciliation report
 init_dc_reconciliation = """
-            create table dc_reconciliation_script
-            (
-              brr_status           varchar2(300) not null,
-              sn                   varchar2(300)  primary key,
-              module               varchar2(300) not null,
-              brr_code             varchar2(300) not null,
-              brr_desc             varchar2(500) not null,
-              brr_column1          varchar2(300) ,
-              brr_column2          varchar2(300),
-              brr_column3          varchar2(300),
-              cnt_column1          varchar2(1000) not null,
-              comments             varchar2(1000),
-              sql_target           varchar2(4000) not null,
-              sql_source           varchar2(4000) not null,
-              run_status_target    varchar2(300),
-              run_time_target      number(16),
-              last_run_date_target date,
-              run_status_source    varchar2(300),
-              run_time_source      number(16),
-              last_run_date_source date
-            ) nologging;
-            comment on column dc_reconciliation_script.brr_status   is 'Y(适用当前项目，要执行) / N(不适用于当前项目)';
-            comment on column dc_reconciliation_script.sn   is '主键，以A或B开头接数字构成，A类规则的优先级高于B';
-            comment on column dc_reconciliation_script.brr_column1   is '统计维度1';
-            comment on column dc_reconciliation_script.brr_column2   is '统计维度2';
-            comment on column dc_reconciliation_script.brr_column3   is '统计维度3';
-            comment on column dc_reconciliation_script.cnt_column1   is '统计结果';
+create table dc_reconciliation_script
+(
+  brr_status           varchar2(300) not null,
+  sn                   varchar2(300)  primary key,
+  module               varchar2(300) not null,
+  brr_code             varchar2(300) not null,
+  brr_desc             varchar2(500) not null,
+  brr_column1          varchar2(300) ,
+  brr_column2          varchar2(300),
+  brr_column3          varchar2(300),
+  cnt_column1          varchar2(1000) not null,
+  comments             varchar2(1000),
+  sql_target           varchar2(4000) ,
+  sql_source           varchar2(4000) ,
+  run_status_target    varchar2(300),
+  run_time_target      number(16),
+  last_run_date_target date,
+  run_status_source    varchar2(300),
+  run_time_source      number(16),
+  last_run_date_source date
+) nologging;
+comment on column dc_reconciliation_script.brr_status   is 'Y(适用当前项目，要执行) / N(不适用于当前项目)';
+comment on column dc_reconciliation_script.sn   is '主键，以A或B开头接数字构成，A类规则的优先级高于B';
+comment on column dc_reconciliation_script.brr_column1   is '统计维度1';
+comment on column dc_reconciliation_script.brr_column2   is '统计维度2';
+comment on column dc_reconciliation_script.brr_column3   is '统计维度3';
+comment on column dc_reconciliation_script.cnt_column1   is '统计结果';
         \n
         """
 init_insert_dc_reconciliation = """
