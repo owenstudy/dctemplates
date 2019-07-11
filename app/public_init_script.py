@@ -77,34 +77,34 @@ insert into dc_validation (SN,MODULE,IN_PROJECT,PRIORITY,ERROR_CODE,TABLE_NAME,C
 """
 # 生成DCReconciliation report的表结构，主要是指business reconciliation report
 init_dc_reconciliation = """
-drop table dc_reconciliation_script; 
-create table dc_reconciliation_script
-(
-  brr_status           varchar2(300) not null,
-  sn                   varchar2(300)  primary key,
-  module               varchar2(300) not null,
-  brr_code             varchar2(300) not null,
-  brr_desc             varchar2(500) not null,
-  brr_column1          varchar2(300) ,
-  brr_column2          varchar2(300),
-  brr_column3          varchar2(300),
-  cnt_column1          varchar2(1000) not null,
-  comments             varchar2(1000),
-  sql_target           varchar2(4000) not null,
-  sql_source           varchar2(4000) not null,
-  run_status_target    varchar2(300),
-  run_time_target      number(16),
-  last_run_date_target date,
-  run_status_source    varchar2(300),
-  run_time_source      number(16),
-  last_run_date_source date
-) nologging;\n
-comment on column dc_reconciliation_script.brr_status   is 'Y(适用当前项目，要执行) / N(不适用于当前项目)';
-comment on column dc_reconciliation_script.sn   is 'Y(Valid)/N(Invalid)';
-comment on column dc_reconciliation_script.brr_column1   is '统计维度1';
-comment on column dc_reconciliation_script.brr_column2   is '统计维度2';
-comment on column dc_reconciliation_script.brr_column3   is '统计维度3';
-comment on column dc_reconciliation_script.cnt_column1   is '统计结果';\n
+            create table dc_reconciliation_script
+            (
+              brr_status           varchar2(300) not null,
+              sn                   varchar2(300)  primary key,
+              module               varchar2(300) not null,
+              brr_code             varchar2(300) not null,
+              brr_desc             varchar2(500) not null,
+              brr_column1          varchar2(300) ,
+              brr_column2          varchar2(300),
+              brr_column3          varchar2(300),
+              cnt_column1          varchar2(1000) not null,
+              comments             varchar2(1000),
+              sql_target           varchar2(4000) not null,
+              sql_source           varchar2(4000) not null,
+              run_status_target    varchar2(300),
+              run_time_target      number(16),
+              last_run_date_target date,
+              run_status_source    varchar2(300),
+              run_time_source      number(16),
+              last_run_date_source date
+            ) nologging;
+            comment on column dc_reconciliation_script.brr_status   is 'Y(适用当前项目，要执行) / N(不适用于当前项目)';
+            comment on column dc_reconciliation_script.sn   is '主键，以A或B开头接数字构成，A类规则的优先级高于B';
+            comment on column dc_reconciliation_script.brr_column1   is '统计维度1';
+            comment on column dc_reconciliation_script.brr_column2   is '统计维度2';
+            comment on column dc_reconciliation_script.brr_column3   is '统计维度3';
+            comment on column dc_reconciliation_script.cnt_column1   is '统计结果';
+        \n
         """
 init_insert_dc_reconciliation = """
 insert into dc_reconciliation_script (BRR_Status,SN,Module,BRR_CODE,BRR_Desc,BRR_Column1,BRR_Column2,BRR_Column3,Cnt_Column1,Comments,SQL_Target,SQL_Source)
