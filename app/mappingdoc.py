@@ -130,8 +130,8 @@ class MappingDoc(object):
                 mapping_list.append(filename)
         return mapping_list
 if __name__ == '__main__':
-    filename='MMA_Mapping_BCP_SRC2STG_1026.xlsx'
-    filelist = ['MMA_Mapping_BCP_SRC2STG_1026 (1).xlsx','MMA_Mapping_ILP Basic_SRC2STG_20181031.xlsx','MMA_Mapping_ILP Transaction_SRC2STG.xlsx','MMA_Mapping_MAV_SRC2STG _0906_2.xlsx','MMA_Mapping_PAC_SRC2STG_0806.xlsx','MMA_Mapping_PARTY_SRC2STG_0905 (1).xlsx','MMA_Mapping_POLICY_PROPOSAL_SRC2STG _0903.xlsx','MMA_Mapping_POLICY_SRC2STG _10 (2).xlsx','MMA_Mapping_POS_SRC2STG.xlsx']
+    # filename='MMA_Mapping_BCP_SRC2STG_1026.xlsx'
+    # filelist = ['MMA_Mapping_BCP_SRC2STG_1026 (1).xlsx','MMA_Mapping_ILP Basic_SRC2STG_20181031.xlsx','MMA_Mapping_ILP Transaction_SRC2STG.xlsx','MMA_Mapping_MAV_SRC2STG _0906_2.xlsx','MMA_Mapping_PAC_SRC2STG_0806.xlsx','MMA_Mapping_PARTY_SRC2STG_0905 (1).xlsx','MMA_Mapping_POLICY_PROPOSAL_SRC2STG _0903.xlsx','MMA_Mapping_POLICY_SRC2STG _10 (2).xlsx','MMA_Mapping_POS_SRC2STG.xlsx']
     mappingcols = MappingDoc()
     mappingcols.get_mapping_list()
     # cntresult = mappingcols.mapping_single_file(filename=filename)

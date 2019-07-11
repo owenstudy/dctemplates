@@ -8,7 +8,7 @@
 # @Software: PyCharm Community Edition
 # ===============================================
 
-from app import oracleconn
+from app import oracleconn, public_init_script
 import  os
 from app import configure
 
@@ -28,8 +28,8 @@ class TriggerCheck(object):
         self.conn = oracleconn.oracleconn(user_name,userpwd,connectstring);
         # 公共执行的cursor
         self.cursor = self.conn.cursor()
-        sqlfilename = os.path.join(configure.DOWNLOAD_FOLDER,'04TriggerCheck.sql')
-        self.__logfile_name = '04TriggerCheck.log'
+        sqlfilename = os.path.join(configure.DOWNLOAD_FOLDER,public_init_script.trigger_file_name)
+        self.__logfile_name =public_init_script.trigger_file_name.split('.')[0] + '.log'
         self.sqlfilehandler = open(sqlfilename,'w')
         # 执行trigger的脚本列表，每生成一次增加一个，最后汇总生成一个执行脚本
         self.__exec_script_list = []

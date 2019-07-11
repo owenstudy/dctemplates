@@ -174,6 +174,41 @@ def validation_upload():
 
     return render_template('success.html', filenames=files)
     pass
+# 2019.7.11 生成Reconciliation语句的insert语句，生成insert脚本文件
+@appserver.route('/reconciliation_upload', methods=['POST'])
+def reconciliation_upload():
+    # Get the name of the uploaded files
+    uploaded_files = request.files.getlist("file[]")
+    filenames = []
+    # 清除已经存在的文件列表
+    clean_dir(configure.UPLOADS_FOLDER)
+    clean_dir(configure.DOWNLOAD_FOLDER)
+    # 加载选择的文件
+    for file in uploaded_files:
+        # Check if the file is one of the allowed types/extensions
+        if file and allowed_file(file.filename):
+            # Make the filename safe, remove unsupported chars
+            filename = secure_filename(file.filename)
+            # Move the file form the temporal folder to the upload
+            # folder we setup
+            # file.save(os.path.join(appserver.config['DOWNLOAD_FOLDER'], filename))
+            file.save(os.path.join(appserver.config['UPLOADS_FOLDER'], filename))
+            # file.save(os.path.join(appserver.config['DOWNLOAD_FOLDER'], filename))
+            # Save the filename into a list, we'll use it later
+            filenames.append(filename)
+            # Redirect the user to the uploaded_file route, which
+            # will basicaly show on the browser the uploaded file
+    # 生成insert sql文件到download folder
+    for file in os.listdir(configure.UPLOADS_FOLDER):
+        validation_script = template.DCReconciliationSQL(os.path.join(configure.UPLOADS_FOLDER,filename))
+        validation_script.gen_script_file()
+    # 遍历download目录，把文件传递到下载页面进行下载
+    shutil.copy(os.path.join(configure.DOWNLOAD_FOLDER, public_init_script.reconciliation_file_name), configure.APP_MAIN_FOLDER)
+    file_path=configure.DOWNLOAD_FOLDER
+    files=[public_init_script.reconciliation_file_name]
+
+    return render_template('success.html', filenames=files)
+    pass
 
 # 调用触发器脚本生成页面
 @appserver.route('/trigger_script_ui', methods=['POST'])
@@ -205,9 +240,9 @@ def gen_trigger_script():
     triggerscripts = TriggerCheck(user_name=user_name,userpwd=user_pwd,connectstring=connectstring,tablelist=table_list)
     result = triggerscripts.save_script_to_file()
     if result is True:
-        trigger_file_name = '04TriggerCheck.sql'
+        trigger_file_name = public_init_script.trigger_file_name
         #复制到根目录以方便和其它程序的下载页面共享
-        shutil.copy(os.path.join(configure.DOWNLOAD_FOLDER, '04TriggerCheck.sql'),configure.APP_MAIN_FOLDER)
+        shutil.copy(os.path.join(configure.DOWNLOAD_FOLDER, public_init_script.trigger_file_name),configure.APP_MAIN_FOLDER)
         # 复制生成的压缩文件到下载目录
 
         # 生成的脚本列表
@@ -286,9 +321,9 @@ def gen_lslogcheck_script():
     lsscripts = LSLogCheck(user_name=user_name,userpwd=user_pwd,connectstring=connectstring,tablelist=table_list)
     result = lsscripts.checkalltables()
     if result is True:
-        trigger_file_name = '05VeriLSLogTable.sql'
+        trigger_file_name = public_init_script.trigger_file_name
         #复制到根目录以方便和其它程序的下载页面共享
-        shutil.copy(os.path.join(configure.DOWNLOAD_FOLDER, '05VeriLSLogTable.sql'),configure.APP_MAIN_FOLDER)
+        shutil.copy(os.path.join(configure.DOWNLOAD_FOLDER,public_init_script.trigger_file_name),configure.APP_MAIN_FOLDER)
         # 复制生成的压缩文件到下载目录
 
         # 生成的脚本列表

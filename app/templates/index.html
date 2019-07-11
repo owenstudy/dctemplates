@@ -80,26 +80,61 @@
                     </div>
                 </div>
             </div>
-            <!--Insert SQL for Scripts-->
+            <!--Insert SQL for Reconciliation, 2019.7.11-->
             <div class="col-sm-6 col-md-3">
                 <div class="thumbnail">
-                    <img src="../static/InsertSQL.png"
+                    <img src="../static/Reconciliation.png"
                          alt="通用的占位符缩略图">
                     <div class="caption">
-                        <h3>Insert SQL From Tables</h3>
-                        <p>Generate insert SQLs from tables with same policy_id</p>
-                       <hr/>
+                        <h3>Reconciliation Script Loading</h3>
+                        <p>Geneate the insert sql of dc_reconciliation_script</p>
                        <hr/>
                         <p>
-                       <form action="extracttablesql_ui" method="post" enctype="multipart/form-data">
+                       <form action="reconciliation_upload" method="post" enctype="multipart/form-data">
+                            <input type="file" multiple="" name="file[]" class="span3" /><br/>
                             <input type="submit" value="Generate Scripts" class="btn btn-primary" role="button">
-                             <a href="#" class="tooltip-test" data-toggle="tooltip" title="
+                         <a href="#" class="tooltip-test" data-toggle="tooltip" title="
                             使用说明:
-                            抽取数据库中表的INSERT语句，系统会根据条件抽取表中含有policy_id表的数据到SQL语句，以方便数据的迁移
+                            根据DC标准对数报表的excel，把excel的校验语句生成insert语句，执行到数据库表 dc_reconciliation_script
                             输入：
-                                1. 输入每个表需要抽取数据的条件，如policy_id<0(迁移保单）
-                                2. 数据库链接
-                            输出：生成所有表中含有policy_id表数据的INSERT语句，SQL语句可以重复执行
+                                1. DataMigrationReconciliationReport_V2.5_LS.xlsx的校验语句文件
+                            输出：脚本文件，包括下面两项
+                                1. 创建表 dc_reconciliation_script 的语句
+                                2. insert每个校验语句到数据库表dc_reconciliation_script
+                         ">Format?</a>
+                         <a href={{url_for('.static',_external=True, filename='DataMigrationReconciliationReport_V2.5_LS.xlsx')}} class="tooltip-test" data-toggle="tooltip" title="样例文档">Sample?</a>
+                       </form>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <!--DC project initialize -->
+            <div class="col-sm-6 col-md-3">
+                <div class="thumbnail">
+                    <img src="../static/StartNewProject.png"
+                         alt="通用的占位符缩略图">
+                    <div class="caption">
+                        <h3>Initialize DC New Project</h3>
+                        <p>Generate the initialized script for a new DC project </p>
+                        <p>
+                        <hr/>
+                   <form action="DC_project_init" method="post" enctype="multipart/form-data">
+                        <hr/>
+                        <hr/>
+                        <input type="submit" value="Generate Scripts" class="btn btn-primary" role="button">
+                         <a href="#" class="tooltip-test" data-toggle="tooltip" title="
+                            使用说明:
+                             脚本目的是使新项目的 db user 统一命名格式，如 REP_DLA, DLA_LS_SRC,DLA_LS_TAR.
+                             通常 work repository的dbuser 放在 o46g4, dbuser看项目分配具体哪个tns下面.
+                             新建一个项目的ODI脚本,都从ODI Base 项目db dump的方式进来 .
+                            输入：
+                                1. 项目简称
+                                2. work rep 所在的 tns
+                                3. db user  所在的 tns
+                            输出：脚本文件，包括下面三项
+                                1. create db user rep_xxx at work rep tns.
+                                2. expdb ODI BASE , impdb to rep_xxx
+                                3. create db stage and target dbuser at assigned tns.
                          ">Help?</a>
                        </form>
                         </p>
@@ -176,6 +211,7 @@
                 </div>
             </div>
             <!--Reconciliation report-->
+            <!--  2019.9.11，这个功能暂时屏蔽，目前使用数据库的比较功能来实现
             <div class="col-sm-6 col-md-3">
                 <div class="thumbnail">
                     <img src="../static/rrReport.png"
@@ -200,6 +236,34 @@
                     </div>
                 </div>
             </div>
+            -->
+            <!--Insert SQL for Scripts-->
+            <div class="col-sm-6 col-md-3">
+                <div class="thumbnail">
+                    <img src="../static/InsertSQL.png"
+                         alt="通用的占位符缩略图">
+                    <div class="caption">
+                        <h3>Insert SQL From Tables</h3>
+                        <p>Generate insert SQLs from tables with same policy_id</p>
+                       <hr/>
+                       <hr/>
+                        <p>
+                       <form action="extracttablesql_ui" method="post" enctype="multipart/form-data">
+                            <input type="submit" value="Generate Scripts" class="btn btn-primary" role="button">
+                             <a href="#" class="tooltip-test" data-toggle="tooltip" title="
+                            使用说明:
+                            抽取数据库中表的INSERT语句，系统会根据条件抽取表中含有policy_id表的数据到SQL语句，以方便数据的迁移
+                            输入：
+                                1. 输入每个表需要抽取数据的条件，如policy_id<0(迁移保单）
+                                2. 数据库链接
+                            输出：生成所有表中含有policy_id表数据的INSERT语句，SQL语句可以重复执行
+                         ">Help?</a>
+                       </form>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 </body>

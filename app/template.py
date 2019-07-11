@@ -441,19 +441,120 @@ class DCVerifySQL(object):
         self.__sql_file_handler.close()
 
         pass
+
+'''2019.7.8 把excel的数据加载并生成insert sql语句保存到DB中，之后对表的sql在外部做调用执行'''
+class DCReconciliationSQL(object):
+    # 初始化数据文件到object
+    def __init__(self,file_name,ignore_strike_row=True):
+        self.__file_name=file_name
+        self.excel_handler=openpyxl.load_workbook(file_name, data_only=True)
+        self.__ignore_strike_row=ignore_strike_row
+        self.__sql_file_handler = open(os.path.join(configure.DOWNLOAD_FOLDER,public_init_script.reconciliation_file_name),'w')
+        self.__column_title_name = 'BRR_Status','SN','Module','BRR_CODE','BRR_Desc','BRR_Column1','BRR_Column2','BRR_Column3','Cnt_Column1','Comments','SQL_Target','SQL_Source'
+    # 生成校验语句的表，保存excel中定义的校验语句
+    def __create_verify_log_table(self):
+        # 创建表dc_validation的脚本
+        sql = public_init_script.init_dc_reconciliation
+    # 取得excel校验语句的数据信息，各个sheet中的格式应该保持统一以方便统一生成
+    def get_verify_sheet_data(self, sheetindex = 1 ):
+        docconfig = self.excel_handler.worksheets[sheetindex]
+        #所有的列名,如果新增加列则直接增加列名,返回的内容只包括列表所在的数据内容
+        column_title_name=(self.__column_title_name)
+
+        # 循环所有的行
+        config_rows=[]
+        for row in docconfig.rows:
+            # 循环所有 的列
+            cell_value={}
+            for cell in row:
+                #忽略已经加了删除线的行,只检查前两列是否有删除线，则说明本行是删除的，其它单元格的删除线不识别
+                if cell.font.strikethrough and cell.col_idx<=2 and self.__ignore_strike_row:
+                    break
+                # 排除掉第一行的标题
+                if cell.col_idx<=len(column_title_name) and cell.row>=2:
+                    title_name=column_title_name[cell.col_idx-1]
+                    if cell.value is None:
+                        cell_value[title_name]= ''
+                    else:
+                        cell_value[title_name]=self.__sql_adjust(cell.value)
+            # 对于 非空的行则增加到变量里面
+            if len(cell_value) > 0:
+                config_rows.append(cell_value)
+        return config_rows
+    # 处理sql语句中的特殊字符
+    def __sql_adjust(self, sql):
+        # 如果sql中有'则做'的处理
+        if type(sql)==type('str'):
+            newsql = sql.replace("'","''")
+        else:
+            newsql=sql
+        return newsql
+
+        pass
+    # 针对已经读取的excel数据，生成insert sql 语句的脚本
+    def gen_insert_sql(self):
+        all_insert_sql = ''
+        # 默认为第二个sheet为校验脚本的sheet, sheet index =1
+        validation_rules = self.get_verify_sheet_data(1)
+        #所有的列名,如果新增加列则直接增加列名,返回的内容只包括列表所在的数据内容
+        column_title_name=(self.__column_title_name)
+
+        for eachvalidation in validation_rules:
+            # 对每个列进行处理
+            try:
+                insert_sql = public_init_script.init_insert_dc_reconciliation.format( \
+                        BRR_Status=eachvalidation['BRR_Status '.strip()], \
+                        SN=eachvalidation['SN         '.strip()], \
+                        Module=eachvalidation['Module     '.strip()], \
+                        BRR_CODE=eachvalidation['BRR_CODE   '.strip()], \
+                        BRR_Desc=eachvalidation['BRR_Desc   '.strip()], \
+                        BRR_Column1=eachvalidation['BRR_Column1'.strip()], \
+                        BRR_Column2=eachvalidation['BRR_Column2'.strip()], \
+                        BRR_Column3=eachvalidation['BRR_Column3'.strip()], \
+                        Cnt_Column1=eachvalidation['Cnt_Column1'.strip()], \
+                        Comments=eachvalidation['Comments   '.strip()], \
+                        SQL_Target=eachvalidation['SQL_Target '.strip()], \
+                        SQL_Source=eachvalidation['SQL_Source '.strip()], \
+                    )
+            except Exception as e:
+                print('Data in excel is not matched with format:')
+                print(eachvalidation)
+            all_insert_sql = all_insert_sql + insert_sql
+        all_insert_sql = all_insert_sql + 'commit;\n'
+        return all_insert_sql
+        pass
+    # 生成dc_validation表的创建表语句 及insert 语句
+    def get_all_sqls(self):
+        all_sql = public_init_script.init_dc_reconciliation + self.gen_insert_sql()
+        return all_sql
+        pass
+    # 2019.7.3 生成脚本文件
+    def gen_script_file(self):
+        filenameonly = self.__file_name.split('/')[-1]
+        self.__sql_file_handler.write("spool {0}.log\n".format(public_init_script.reconciliation_file_name.split('.')[0]))
+        # 生成insert sql
+        insert_sql = self.get_all_sqls()
+        self.__sql_file_handler.write(insert_sql)
+        self.__sql_file_handler.write("\nspool off")
+        self.__sql_file_handler.write("\n quit; ")
+        self.__sql_file_handler.close()
+
+        pass
 if __name__=='__main__':
 
     file_name='./DC_VALIDATION.xlsx'
     # file_name='./投保字段规则合集_20180525.xlsx'
 
-    veriscript = DCVerifySQL(file_name)
-    sheet_list = [1]
+    # veriscript = DCVerifySQL(file_name)
+    # sheet_list = [1]
     # data = veriscript.get_all_sqls(sheet_list)
     # print(data)
     # script = veriscript.get_all_sqls()
     # print(script)
-    veriscript.gen_script_file()
-
+    # veriscript.gen_script_file()
+    # Test reconciliation
+    reconscript = DCReconciliationSQL(file_name='DataMigrationReconciliationReport_V2.5_LS (5).xlsx')
+    reconscript.gen_script_file()
     # dcrrreport = DCReport(file_name)
     # dcrrreport.process_report_data()
 
