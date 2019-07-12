@@ -39,6 +39,8 @@ init_insert_dc_all_tables = """insert into dc_all_tables (table_name,table_categ
 
 # 生成DC校验的表结构，主要是指手工维护的一些逻辑校验
 init_dc_validation = """
+drop table dc_validation; 
+
 create table dc_validation
 (
   sn                     number(5) primary key,
@@ -80,6 +82,8 @@ insert into dc_validation (SN,MODULE,IN_PROJECT,PRIORITY,ERROR_CODE,TABLE_NAME,C
 """
 # 生成DCReconciliation report的表结构，主要是指business reconciliation report
 init_dc_reconciliation = """
+drop table dc_reconciliation_script; 
+
 create table dc_reconciliation_script
 (
   brr_status           varchar2(300) not null,
