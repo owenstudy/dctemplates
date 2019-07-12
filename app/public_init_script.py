@@ -13,8 +13,12 @@
 
 '''创建表的语句，每个表一个变量说明'''
 
+# 公共的sqlplus 参数设置
+init_sqlplus_para = """
+            set echo on \n
+            """
 #DC迁移用到的表,如果表已经存在则忽略创建，不删除，因为表中的目标数据是额外维护的
-init_dc_all_tables = """
+init_dc_all_tables = init_sqlplus_para + """
 create table dc_all_tables  
   (table_name                varchar2(30) primary key,
    table_category           varchar2(20) not null,  
@@ -38,7 +42,7 @@ init_insert_dc_all_tables = """insert into dc_all_tables (table_name,table_categ
     where not exists(select 1 from dc_all_tables x where x.table_name='{table_name}' and x.table_category='{table_category}');\n"""
 
 # 生成DC校验的表结构，主要是指手工维护的一些逻辑校验
-init_dc_validation = """
+init_dc_validation = init_sqlplus_para + """
 drop table dc_validation; 
 
 create table dc_validation
@@ -81,7 +85,7 @@ insert into dc_validation (SN,MODULE,IN_PROJECT,PRIORITY,ERROR_CODE,TABLE_NAME,C
 );\n
 """
 # 生成DCReconciliation report的表结构，主要是指business reconciliation report
-init_dc_reconciliation = """
+init_dc_reconciliation =  init_sqlplus_para + """
 drop table dc_reconciliation_script; 
 
 create table dc_reconciliation_script

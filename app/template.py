@@ -486,6 +486,8 @@ class DCReconciliationSQL(object):
         # 如果sql中有'则做'的处理
         if type(sql)==type('str'):
             newsql = sql.replace("'","''")
+            #处理excel中有换行的情况，替换成空格
+            newsql = newsql.replace("\n"," ").replace('\r',' ')
         else:
             newsql=sql
         return newsql
