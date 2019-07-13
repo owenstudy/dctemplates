@@ -481,16 +481,31 @@ class DCReconciliationSQL(object):
             if len(cell_value) > 0:
                 config_rows.append(cell_value)
         return config_rows
+    # 对SQL注释中的--进行处理，以防止换行符替换后注释扩大，把--替换成/* xxx */的形式, 2019.7.13
+    def __replace_remark(self,matched):
+        newremark = '/* '+ matched.group() + ' */'
+        return newremark
     # 处理sql语句中的特殊字符
     def __sql_adjust(self, sql):
         # 如果sql中有'则做'的处理
         if type(sql)==type('str'):
             newsql = sql.replace("'","''")
+            # 替换SQL中的--注释,替换成/* */
+            newsql = re.sub(r'--(.*)',self.__replace_remark,newsql)
             #处理excel中有换行的情况，替换成空格
             newsql = newsql.replace("\n"," ").replace('\r',' ')
+            # 对于超长的字符串进行换行
+            final_sql = ''
+            for s in newsql.split(','):
+                if len(final_sql+s)>=1000:
+                    final_sql = final_sql +'\n' + s+','
+                else:
+                    final_sql = final_sql + s + ','
+            # 移除最后一个,
+            final_sql = final_sql[:len(final_sql)-1]
         else:
-            newsql=sql
-        return newsql
+            final_sql=sql
+        return final_sql
 
         pass
     # 针对已经读取的excel数据，生成insert sql 语句的脚本
