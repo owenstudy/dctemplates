@@ -355,7 +355,7 @@ class DCVerifySQL(object):
         self.__file_name=file_name
         self.excel_handler=openpyxl.load_workbook(file_name, data_only=True)
         self.__ignore_strike_row=ignore_strike_row
-        self.__sql_file_handler = open(os.path.join(configure.DOWNLOAD_FOLDER,public_init_script.validation_file_name),'w')
+        self.__sql_file_handler = open(os.path.join(configure.DOWNLOAD_FOLDER,public_init_script.validation_file_name),'w',encoding='utf-8')
     # 生成校验语句的表，保存excel中定义的校验语句
     def __create_verify_log_table(self):
         # 创建表dc_validation的脚本
@@ -387,15 +387,31 @@ class DCVerifySQL(object):
                 config_rows.append(cell_value)
         return config_rows
     # 处理sql语句中的特殊字符
+    # 对SQL注释中的--进行处理，以防止换行符替换后注释扩大，把--替换成/* xxx */的形式, 2019.7.13
+    def __replace_remark(self,matched):
+        newremark = '/* '+ matched.group() + ' */'
+        return newremark
+    # 处理sql语句中的特殊字符
     def __sql_adjust(self, sql):
         # 如果sql中有'则做'的处理
         if type(sql)==type('str'):
             newsql = sql.replace("'","''")
+            # 替换SQL中的--注释,替换成/* */
+            newsql = re.sub(r'--(.*)',self.__replace_remark,newsql)
+            #处理excel中有换行的情况，替换成空格
+            newsql = newsql.replace("\n"," ").replace('\r',' ')
+            # 对于超长的字符串进行换行
+            final_sql = ''
+            for s in newsql.split(','):
+                if len(final_sql+s)>=1000:
+                    final_sql = final_sql +'\n' + s+','
+                else:
+                    final_sql = final_sql + s + ','
+            # 移除最后一个,
+            final_sql = final_sql[:len(final_sql)-1]
         else:
-            newsql=sql
-        return newsql
-
-        pass
+            final_sql=sql
+        return final_sql
     # 针对已经读取的excel数据，生成insert sql 语句的脚本
     def gen_insert_sql(self):
         all_insert_sql = ''
@@ -449,7 +465,7 @@ class DCReconciliationSQL(object):
         self.__file_name=file_name
         self.excel_handler=openpyxl.load_workbook(file_name, data_only=True)
         self.__ignore_strike_row=ignore_strike_row
-        self.__sql_file_handler = open(os.path.join(configure.DOWNLOAD_FOLDER,public_init_script.reconciliation_file_name),'w')
+        self.__sql_file_handler = open(os.path.join(configure.DOWNLOAD_FOLDER,public_init_script.reconciliation_file_name),'w',encoding='utf-8')
         self.__column_title_name = 'BRR_Status','SN','Module','BRR_CODE','BRR_Desc','BRR_Column1','BRR_Column2','BRR_Column3','Cnt_Column1','Comments','SQL_Target','SQL_Source'
     # 生成校验语句的表，保存excel中定义的校验语句
     def __create_verify_log_table(self):
