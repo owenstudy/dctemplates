@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="https://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+   <script src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
+
+    <title>DC new project initialization  </title>
+</head>
+<body>
+  <div class="container">
+   <div class="header">
+    <h3 class="text-muted">DC new project initialization</h3>
+   </div>
+   <hr/>
+    <form id="form1" method="post" action="DC_project_init_script" enctype="multipart/form-data">
+        <div class="row">
+          <label><a href="#" class="tooltip-test" data-toggle="tooltip" title="新项目的名额缩写，相关的用户和ODI都以此缩写名称来进行相应处理">
+              New Project Abbr.</a></label>
+          <label class="col-sg-2">
+              <input type="text" class="form-control" name="project_abbr" placeholder="">
+          </label>
+      </div>
+        <div class="row">
+          <label><a href="#" class="tooltip-test" data-toggle="tooltip" title="寿险还是产险项目">Life or General</a></label>
+          <label class="radio-inline">
+                <input type="radio" name="ls_gs"  value="LS"  checked>Life
+          </label>
+          <label class="radio-inline">
+                <input type="radio" name="ls_gs"  value="GS" >General
+          </label>
+        </div>
+        <div class="row">
+          <label><a href="#" class="tooltip-test" data-toggle="tooltip" title="实际转换所在的数据数据库">DC Run Database</a></label>
+          <label class="radio-inline">
+                <input type="radio" name="run_database"  value="c1815u1"  checked>c1815u1
+          </label>
+          <label class="radio-inline">
+                <input type="radio" name="run_database"  value="c1815u2" >c1815u2
+          </label>
+        </div>
+
+      <hr/>
+
+   <div class="header">
+        <div>
+            <input type="submit" value="Generate Scripts"></input>
+
+        </div>
+   </div>
+   <hr/>
+    </form>
+   </div>
+
+</body>
+</html>

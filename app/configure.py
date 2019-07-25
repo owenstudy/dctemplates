@@ -22,6 +22,8 @@ create_table_configure = {"real_data_type": False, "table_prefix":"",  "addition
 
 # 生成脚本的一些公共通用配置信息
 script_public_configure = {'os':'win'}
+# new project 初始化脚本参数
+new_project_init_config = {"project_abbr":"", "ls_gs":"LS,GS", "work_repo_list":""}
 
 import os
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))

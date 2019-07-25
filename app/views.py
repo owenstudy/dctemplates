@@ -18,6 +18,7 @@ from app.lstriggercheck import TriggerCheck
 from app import configure,template, public_init_script
 from app.lslogcheck import LSLogCheck
 from app.extractdatatosql import ExtractData2Sql
+from app.dcprojectinit import InitDCProject
 
 # Initialize the Flask application
 # app = Flask(__name__)
@@ -95,6 +96,92 @@ def uploaded_file(filename):
 def download_file(filename):
     return send_from_directory(appserver.config['APP_MAIN_FOLDER'],
                                filename)
+# 获取template配置页面的参数并生成脚本
+@appserver.route('/generatescript', methods=['POST'])
+def generatescript():
+    try:
+        script_options(request)
+        generate_all_scripts()
+        # 压缩sqlldr相关的脚本
+        zip_dir(configure.DOWNLOAD_FOLDER)
+        if os.path.exists(os.path.join(configure.APP_MAIN_FOLDER, 'allLoadVeriScripts.zip')):
+            os.remove(os.path.join(configure.APP_MAIN_FOLDER, 'allLoadVeriScripts.zip'))
+        os.rename(os.path.join(configure.APP_MAIN_FOLDER,'downloads.zip'),os.path.join(configure.APP_MAIN_FOLDER,'allLoadVeriScripts.zip'))
+        # 复制生成的压缩文件到下载目录
+
+        # 生成的脚本列表
+        filelist = ['allLoadVeriScripts.zip']
+
+        return render_template('success.html', filenames=filelist)
+    except Exception as e:
+        return render_template('fail.html')
+# 处理传递过来的生成脚本参数
+def script_options(request):
+    sqlloader_configure = {"file_name_ext": "csv", "terminated_by": ",", "enclosed_by": '"', "append_type": "append",
+                           "nls_lang": "AMERICAN_AMERICA.ZHS16GBK", 'file_name_upper': True}
+    # sqlloader的一些配置信息
+    # file_name_ext
+    file_name_ext = request.values.getlist('file_name_ext')
+    for s in file_name_ext:
+        configure.sqlloader_configure['file_name_ext'] = s
+    # terminated_by
+    terminated_by = request.values.getlist('terminated_by')
+    for s in terminated_by:
+        if s=='TAB':
+            configure.sqlloader_configure['terminated_by'] = '\t'
+        else:
+            configure.sqlloader_configure['terminated_by'] = s
+    # enclosed_by
+    enclosed_by = request.values.getlist('enclosed_by')
+    for s in enclosed_by:
+        configure.sqlloader_configure['enclosed_by'] = s
+    # append_type
+    append_type = request.values.getlist('append_type')
+    for s in append_type:
+        configure.sqlloader_configure['append_type'] = s
+    # nls_lang
+    nls_lang = request.values.getlist('nls_lang')
+    for s in nls_lang:
+        configure.sqlloader_configure['nls_lang'] = s
+    # file_name_upper
+    file_name_upper = request.values.getlist('file_name_upper')
+    for s in file_name_upper:
+        configure.sqlloader_configure['file_name_upper'] = __strtobool(s)
+    # ignore_first_row
+    ignore_first_row = request.values.getlist('ignore_first_row')
+    for s in ignore_first_row:
+        configure.sqlloader_configure['ignore_first_row'] = __strtobool(s)
+    # 创建表的一些配置信息
+    # real_data_type
+        real_data_type = request.values.getlist('real_data_type')
+    for s in real_data_type:
+        configure.create_table_configure['real_data_type'] = __strtobool(s)
+    # table_prefix
+    table_prefix = request.values.getlist('table_prefix')
+    for s in table_prefix:
+        configure.create_table_configure['table_prefix'] = s
+    # 2019.6.27 additional columns
+        additional_DC_columns = request.values.getlist('additional_DC_columns')
+    for s in additional_DC_columns:
+        configure.create_table_configure['additional_DC_columns'] = __strtobool(s)
+    # 数据库连接信息
+    # src_user_name
+    src_user_name = request.values.getlist('src_user_name')
+    for s in src_user_name:
+        configure.sqlloader_configure['src_user_name'] = s
+    # src_user_pwd
+    src_user_pwd = request.values.getlist('src_user_pwd')
+    for s in src_user_pwd:
+        configure.sqlloader_configure['src_user_pwd'] = s
+    # connectstring
+    connectstring = request.values.getlist('connectstring')
+    for s in connectstring:
+        configure.sqlloader_configure['connectstring'] = s
+    # tar_user_name
+        tar_user_name = request.values.getlist('tar_user_name')
+    for s in tar_user_name:
+        configure.sqlloader_configure['tar_user_name'] = s
+
 # 对综合统计报表数据进行合并,生成差异报表
 @appserver.route('/rr_upload', methods=['POST'])
 def rr_upload():
@@ -209,6 +296,56 @@ def reconciliation_upload():
 
     return render_template('success.html', filenames=files)
     pass
+
+# 生成DC项目的初始化脚本配置页面, 2019.7.14
+@appserver.route('/DC_project_init_config', methods=['POST'])
+def DC_project_init_config():
+    return render_template('dcprojectinit_config.html')
+    pass
+
+# 生成DC项目的初始化脚本 2019.7.25
+@appserver.route('/DC_project_init_script', methods=['POST'])
+def DC_project_init_script():
+
+    # 项目名称缩写
+    src_list = request.values.getlist('project_abbr')
+    for s in src_list:
+        project_abbr = s
+    # Life or GS
+        src_list = request.values.getlist('ls_gs')
+    for s in src_list:
+        # 默认是LS
+        ls_gs = s
+        # if s is True:
+        #     ls_gs = 'LS'
+        # else:
+        #     ls_gs = 'GS'
+    # 项目执行的数据库
+        src_list = request.values.getlist('run_database')
+    for s in src_list:
+        # 默认是选择c1815u1
+        run_database = s
+        #
+        # if s is True:
+        #     run_database = 'c1815u1'
+        # else:
+        #     run_database = 'c1815u2'
+    # 生成脚本
+    initscript = InitDCProject(project_short=project_abbr,ls_gs=ls_gs,dc_user_base=run_database)
+    result = initscript.gen_all_script()
+    if result is True:
+        # 压缩sqlldr相关的脚本
+        zip_dir(configure.DOWNLOAD_FOLDER)
+        if os.path.exists(os.path.join(configure.APP_MAIN_FOLDER, 'dcNewProjectInitScripts.zip')):
+            os.remove(os.path.join(configure.APP_MAIN_FOLDER, 'dcNewProjectInitScripts.zip'))
+        os.rename(os.path.join(configure.APP_MAIN_FOLDER,'downloads.zip'),os.path.join(configure.APP_MAIN_FOLDER,'dcNewProjectInitScripts.zip'))
+        # 复制生成的压缩文件到下载目录
+
+        # 生成的脚本列表
+        filelist = ['dcNewProjectInitScripts.zip']
+        return render_template('success.html', filenames=filelist)
+    else:
+        return render_template('fail.html')
 
 # 调用触发器脚本生成页面
 @appserver.route('/trigger_script_ui', methods=['POST'])
@@ -344,90 +481,6 @@ def dcportal():
                  }
     return render_template('index_dc.html', menu_list=menu_list,menu_items=menu_items)
 
-@appserver.route('/generatescript', methods=['POST'])
-def generatescript():
-    try:
-        script_options(request)
-        generate_all_scripts()
-        # 压缩sqlldr相关的脚本
-        zip_dir(configure.DOWNLOAD_FOLDER)
-        if os.path.exists(os.path.join(configure.APP_MAIN_FOLDER, 'allLoadVeriScripts.zip')):
-            os.remove(os.path.join(configure.APP_MAIN_FOLDER, 'allLoadVeriScripts.zip'))
-        os.rename(os.path.join(configure.APP_MAIN_FOLDER,'downloads.zip'),os.path.join(configure.APP_MAIN_FOLDER,'allLoadVeriScripts.zip'))
-        # 复制生成的压缩文件到下载目录
-
-        # 生成的脚本列表
-        filelist = ['allLoadVeriScripts.zip']
-
-        return render_template('success.html', filenames=filelist)
-    except Exception as e:
-        return render_template('fail.html')
-# 处理传递过来的生成脚本参数
-def script_options(request):
-    sqlloader_configure = {"file_name_ext": "csv", "terminated_by": ",", "enclosed_by": '"', "append_type": "append",
-                           "nls_lang": "AMERICAN_AMERICA.ZHS16GBK", 'file_name_upper': True}
-    # sqlloader的一些配置信息
-    # file_name_ext
-    file_name_ext = request.values.getlist('file_name_ext')
-    for s in file_name_ext:
-        configure.sqlloader_configure['file_name_ext'] = s
-    # terminated_by
-    terminated_by = request.values.getlist('terminated_by')
-    for s in terminated_by:
-        if s=='TAB':
-            configure.sqlloader_configure['terminated_by'] = '\t'
-        else:
-            configure.sqlloader_configure['terminated_by'] = s
-    # enclosed_by
-    enclosed_by = request.values.getlist('enclosed_by')
-    for s in enclosed_by:
-        configure.sqlloader_configure['enclosed_by'] = s
-    # append_type
-    append_type = request.values.getlist('append_type')
-    for s in append_type:
-        configure.sqlloader_configure['append_type'] = s
-    # nls_lang
-    nls_lang = request.values.getlist('nls_lang')
-    for s in nls_lang:
-        configure.sqlloader_configure['nls_lang'] = s
-    # file_name_upper
-    file_name_upper = request.values.getlist('file_name_upper')
-    for s in file_name_upper:
-        configure.sqlloader_configure['file_name_upper'] = __strtobool(s)
-    # ignore_first_row
-    ignore_first_row = request.values.getlist('ignore_first_row')
-    for s in ignore_first_row:
-        configure.sqlloader_configure['ignore_first_row'] = __strtobool(s)
-    # 创建表的一些配置信息
-    # real_data_type
-        real_data_type = request.values.getlist('real_data_type')
-    for s in real_data_type:
-        configure.create_table_configure['real_data_type'] = __strtobool(s)
-    # table_prefix
-    table_prefix = request.values.getlist('table_prefix')
-    for s in table_prefix:
-        configure.create_table_configure['table_prefix'] = s
-    # 2019.6.27 additional columns
-        additional_DC_columns = request.values.getlist('additional_DC_columns')
-    for s in additional_DC_columns:
-        configure.create_table_configure['additional_DC_columns'] = __strtobool(s)
-    # 数据库连接信息
-    # src_user_name
-    src_user_name = request.values.getlist('src_user_name')
-    for s in src_user_name:
-        configure.sqlloader_configure['src_user_name'] = s
-    # src_user_pwd
-    src_user_pwd = request.values.getlist('src_user_pwd')
-    for s in src_user_pwd:
-        configure.sqlloader_configure['src_user_pwd'] = s
-    # connectstring
-    connectstring = request.values.getlist('connectstring')
-    for s in connectstring:
-        configure.sqlloader_configure['connectstring'] = s
-    # tar_user_name
-        tar_user_name = request.values.getlist('tar_user_name')
-    for s in tar_user_name:
-        configure.sqlloader_configure['tar_user_name'] = s
 
 def __strtobool(value):
     if value.upper() == 'TRUE':
