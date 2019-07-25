@@ -332,6 +332,9 @@ def DC_project_init_script():
         #     run_database = 'c1815u2'
     # 生成脚本
     initscript = InitDCProject(project_short=project_abbr,ls_gs=ls_gs,dc_user_base=run_database)
+    # 清险已经生成的所有的文件
+    shutil.rmtree(configure.DOWNLOAD_FOLDER)
+    os.mkdir(configure.DOWNLOAD_FOLDER)
     result = initscript.gen_all_script()
     if result is True:
         # 压缩sqlldr相关的脚本
