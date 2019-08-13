@@ -52,7 +52,7 @@ class InitDCProject:
                     spool 00_work_rep_init_script.log
                     create user rep_{project_short}  identified by  rep_{project_short} ; 
                     grant connect,resource,create session,create view,create synonym,
-                    select any table,unlimited tablespace to rep_{project_short}; 
+                    INSERT ANY TABLE ,select any table,unlimited tablespace to rep_{project_short}; 
                     grant dba to rep_{project_short};
                     spool off
                     EXIT;
@@ -68,10 +68,10 @@ class InitDCProject:
                 drop user rep_{project_short} cascade;
                 create user rep_{project_short}  identified by  rep_{project_short} ; 
                 grant connect,resource,create session,create view,create synonym,
-                select any table,unlimited tablespace to rep_{project_short}; 
+                INSERT ANY TABLE ,select any table,unlimited tablespace to rep_{project_short}; 
                 grant dba to rep_{project_short};   
                 EXIT;"""
-    # __02_initODI.format( exp_db = ,date= , project_short = ,date )
+        # __02_initODI.format( exp_db = ,date= , project_short = ,date )
         self.__02_initODI = """ 
                 sqlplus /nolog @01_before_exp.sql>01_before_exp.log
                 exp {exp_db}/{exp_db}@o46g4 file={exp_db}_{date}.dmp owner={exp_db} log=exp_{exp_db}_{date}.log statistics=none
@@ -79,7 +79,7 @@ class InitDCProject:
                 sqlplus /nolog @03_after_imp.sql>../log/03_after_imp.log
               """
 
-    # execute at dc_user_base
+        # execute at dc_user_base
         self.__03_after_imp = """ 
             set feedback 1
             set timing on
@@ -95,24 +95,23 @@ class InitDCProject:
             create tablespace tbs_{project_short} 
             datafile '/oradata/{dc_user_base}/tbs_{project_short}_01.dbf' size 50m autoextend on  ,         
             '/oradata/{dc_user_base}/tbs_{project_short}_02.dbf' size 50m autoextend on    ;
-            
+
             create user  {project_short}_{ls_gs}_src  identified by  {project_short}_{ls_gs}_src default tablespace tbs_{project_short}  ;  
             grant connect,resource,create session,create view,create synonym,
-            select any table,unlimited tablespace to {project_short}_{ls_gs}_src ; 
+            INSERT ANY TABLE ,select any table,unlimited tablespace to {project_short}_{ls_gs}_src ; 
             grant dba to {project_short}_{ls_gs}_src;  
-            
+
             create user  {project_short}_{ls_gs}_tar  identified by  {project_short}_{ls_gs}_tar default tablespace tbs_{project_short}  ;  
             grant connect,resource,create session,create view,create synonym,
-            select any table,unlimited tablespace to {project_short}_{ls_gs}_tar ; 
+            INSERT ANY TABLE ,select any table,unlimited tablespace to {project_short}_{ls_gs}_tar ; 
             grant dba to {project_short}_{ls_gs}_tar; 
-            
+
             create user  {project_short}_{ls_gs}_src_trial  identified by  {project_short}_{ls_gs}_src_trial default tablespace tbs_{project_short}  ;  
             grant connect,resource,create session,create view,create synonym,
-            select any table,unlimited tablespace to {project_short}_{ls_gs}_src_trial ; 
+            INSERT ANY TABLE ,select any table,unlimited tablespace to {project_short}_{ls_gs}_src_trial ; 
             grant dba to {project_short}_{ls_gs}_src_trial;
             EXIT;
  """
-
 
     # 1.1 保存到 00_work_rep_init_script.sql
     def save_00_work_rep_init_script(self):
@@ -120,12 +119,10 @@ class InitDCProject:
         f.write(self.__00_work_rep_init_script.format(project_short=self.__project_short))
         f.close()
 
-
     def save_00_work_rep_init_script_bat(self):
         f = open(self.__00_work_rep_init_script_file2, 'w+')
         f.write("sqlplus /nolog @00_work_rep_init_script.sql")
         f.close()
-
 
     # 1.2 保存到 01_before_exp.sql
     def save_01_before_exp(self):
@@ -133,13 +130,12 @@ class InitDCProject:
         f.write(self.__01_before_exp.format(project_short=self.__project_short))
         f.close()
 
-
     # 1.3 保存到 02_initODI_file.sql
     def save_02_initODI(self):
         f = open(self.__02_initODI_file, 'w+')
-        f.write(self.__02_initODI.format(exp_db=self.__exp_db, date=self.__str_date, project_short=self.__project_short))
+        f.write(
+            self.__02_initODI.format(exp_db=self.__exp_db, date=self.__str_date, project_short=self.__project_short))
         f.close()
-
 
     # 1.4 保存到 03_after_imp_file.sql
     def save_03_after_imp(self):
@@ -147,7 +143,6 @@ class InitDCProject:
         f.write(self.__03_after_imp.format(project_short=self.__project_short, dc_user_base=self.__dc_user_base,
                                            ls_gs=self.__ls_gs))
         f.close()
-
 
     # run for all script 2019.7.25
     def gen_all_script(self):
@@ -158,6 +153,8 @@ class InitDCProject:
         self.save_02_initODI()
         self.save_03_after_imp()
         return True
+
+
 if __name__ == '__main__':
     project_short = ''
     work_rep_base = ''
