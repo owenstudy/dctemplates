@@ -329,6 +329,9 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
     def __get_fk_def_sql(self,module_name,table_name, column_name, refertable):
         # 2019.8.30 生成FK的定义语句，为了ODI生成动态语句时方便查询
         fk_def_sql =''
+        # 对于S_DM开始的表则不需要生成FK，因为PK没有创建
+        if table_name[0:2]!='DM':
+            return ''
         if refertable is not None:
             newrefertable = configure.create_table_configure.get('table_prefix') + refertable
         else:
@@ -671,7 +674,8 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
             # 2019.8.30 输出FK定义的语句
             if out_def_sql_flag is True:
                 fk_name='FK_'+table_name+ '_'+column_name
-                fk_sql = 'alter table {table_name} add constraint {fk_name} foreign key({column_name}) references {fk_table_name}({fk_column_name}) disable;\n '
+                fk_name = fk_name[0:30]
+                fk_sql = 'alter table {table_name} add constraint {fk_name} foreign key({column_name}) references {fk_table_name}({fk_column_name}) on delete cascade disable;\n '
                 fk_sql=fk_sql.format(table_name=table_name,fk_name=fk_name,column_name=column_name,fk_table_name=newrefertable_name,fk_column_name=pk_column_name)
                 # 替换生成的校验SQL语句，直接输出定义语句
                 veri_sql = fk_sql
