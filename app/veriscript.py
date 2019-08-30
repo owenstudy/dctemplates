@@ -216,7 +216,7 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
         all_sql = create_table_sql + insert_sql
         return all_sql
 
-    '''生成创建template表的脚本
+    '''生成创建template表的脚本，按真实的数据类型来生成
     '''
     def __create_template_script_datatype(self):
         script=None
@@ -228,6 +228,8 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
             pk_column_list = ''
             # 有引用DM表外键的字段列表
             fk_column_list = ''
+            # 生成FK的定义语句
+            fk_def_sql = ''
             for row in self.__mapping_column_list:
                 if row.tableName==table_name:
                     #调整字段的长度，使脚本对齐美观
@@ -281,6 +283,8 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
                             col_str = ' varchar2(300) '
                         # 补充PK值
                         script = script + col_str
+                        # 生成FK定义语句 2019.8.30
+                        fk_def_sql = fk_def_sql + self.__get_fk_def_sql(row.moduleName,newtable_name,row.columnName,row.referTable)
                     except Exception as e:
                         print('创建Template表时出现错误： '+str(e))
                     script=script+',\n'
@@ -315,10 +319,24 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
                     if fk_column in pk_column_list: continue
                     additional_script = additional_script + self.__get_additional_DC_columns(newtable_name,fk_column,'')
                 all_table_script = all_table_script + additional_script
+            # 生成FK的定义语句 2019.8.30
+            fk_comments = '------Add foreign key and disable for ODI auto script reference ------\n'
+            all_table_script = all_table_script + fk_comments + fk_def_sql
 
         return all_table_script
         pass
-
+    # 生成fk定义语句, 2019.8.30 TODO
+    def __get_fk_def_sql(self,module_name,table_name, column_name, refertable):
+        # 2019.8.30 生成FK的定义语句，为了ODI生成动态语句时方便查询
+        fk_def_sql =''
+        if refertable is not None:
+            newrefertable = configure.create_table_configure.get('table_prefix') + refertable
+        else:
+            newrefertable = refertable
+        # 生成FK定义语句
+        fk_def_sql = self.__get_foreign_key_sql(module_name, table_name, column_name, newrefertable,
+                                                out_def_sql_flag=True)
+        return fk_def_sql
     '''生成创建template表的脚本'''
     def __create_template_script(self):
         script=None
@@ -330,6 +348,8 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
             pk_column_list = ''
             # 有引用DM表外键的字段列表
             fk_column_list = ''
+            # 生成FK的定义语句
+            fk_def_sql = ''
             for row in self.__mapping_column_list:
                 if row.tableName==table_name:
                     #为空的长度也都设置为默认300
@@ -359,6 +379,8 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
                                 fk_column_list = fk_column_list + row.columnName + ','
                         # script = script + ' varchar2(%d) %s'%(col_len,primary_key)
                         script = script + ' varchar2(%d) ' % (col_len)
+                        # 生成FK定义语句 2019.8.30
+                        fk_def_sql = fk_def_sql + self.__get_fk_def_sql(row.moduleName,newtable_name,row.columnName,row.referTable)
                     except Exception as e:
                         print('创建Template表时出现错误： '+str(e))
                     script=script+',\n'
@@ -393,7 +415,9 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
                     if fk_column in pk_column_list: continue
                     additional_script = additional_script + self.__get_additional_DC_columns(newtable_name,fk_column,'')
                 all_table_script = all_table_script + additional_script
-
+            # 生成FK的定义语句 2019.8.30
+            fk_comments = '------Add foreign key and disable for ODI auto script reference ------\n'
+            all_table_script = all_table_script + fk_comments + fk_def_sql
         return all_table_script
         pass
 
@@ -589,7 +613,10 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
         return pk_column_list
 
     '''校验外键,template表之间的校验'''
-    def __get_foreign_key_sql(self,module_name,table_name, column_name, refertable):
+    # 加一个生成定义语句的选项,out_def_sql_flag，默认为不生成，只有最后生成的语句有变化，其它FOLLOW生成校验语句的逻辑
+    # 2019.8.30 生成引用DM表外键的定义语句，主要是为了在ODI生成动态脚本时使用，生成的校验语句是 disable 状态,语句例子格式如下
+    # alter table DM_CONTRACT_BENE add constraint test_fk foreign key(PARTY_ID) references mma_ls_tar.t_party(PARTY_ID) disable;
+    def __get_foreign_key_sql(self,module_name,table_name, column_name, refertable, out_def_sql_flag = False):
         need_verify = True
         if refertable is None or len(refertable.split('.')) == 1:
             return ''
@@ -641,6 +668,13 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
                        (module_name, table_name, column_name, veri_code,select_sql,table_name)
 
             veri_sql = insert_result + veri_sql + where_sql + ';\n'
+            # 2019.8.30 输出FK定义的语句
+            if out_def_sql_flag is True:
+                fk_name='FK_'+table_name+ '_'+column_name
+                fk_sql = 'alter table {table_name} add constraint {fk_name} foreign key({column_name}) references {fk_table_name}({fk_column_name}) disable;\n '
+                fk_sql=fk_sql.format(table_name=table_name,fk_name=fk_name,column_name=column_name,fk_table_name=newrefertable_name,fk_column_name=pk_column_name)
+                # 替换生成的校验SQL语句，直接输出定义语句
+                veri_sql = fk_sql
         else:
             veri_sql = ''
 
