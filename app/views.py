@@ -19,6 +19,7 @@ from app import configure,template, public_init_script
 from app.lslogcheck import LSLogCheck
 from app.extractdatatosql import ExtractData2Sql
 from app.dcprojectinit import InitDCProject
+from app.dcbaseline_config_load import DCBaselineConfig
 
 # Initialize the Flask application
 # app = Flask(__name__)
@@ -472,6 +473,45 @@ def gen_lslogcheck_script():
     else:
         return render_template('fail.html')
     pass
+
+# 生成DC baseline的脚本
+@appserver.route('/DCBaselineConfig', methods=['POST'])
+def gen_dcbaseline_config_script():
+    # Get the name of the uploaded files
+    uploaded_files = request.files.getlist("file[]")
+    filenames = []
+    # 清除已经存在的文件列表
+    clean_dir(configure.UPLOADS_FOLDER)
+    clean_dir(configure.DOWNLOAD_FOLDER)
+    # 加载选择的文件
+    for file in uploaded_files:
+        # Check if the file is one of the allowed types/extensions
+        if file and allowed_file(file.filename):
+            # Make the filename safe, remove unsupported chars
+            filename = secure_filename(file.filename)
+            # Move the file form the temporal folder to the upload
+            # folder we setup
+            # file.save(os.path.join(appserver.config['DOWNLOAD_FOLDER'], filename))
+            file.save(os.path.join(appserver.config['UPLOADS_FOLDER'], filename))
+            # file.save(os.path.join(appserver.config['DOWNLOAD_FOLDER'], filename))
+            # Save the filename into a list, we'll use it later
+            filenames.append(filename)
+            # Redirect the user to the uploaded_file route, which
+            # will basicaly show on the browser the uploaded file
+    # 生成insert sql文件到download folder
+    for file in os.listdir(configure.UPLOADS_FOLDER):
+        dcbaseline_config = DCBaselineConfig(file)
+        dcbaseline_config.save_all_sqls()
+    # 压缩sqlldr相关的脚本
+    zip_dir(configure.DOWNLOAD_FOLDER)
+    if os.path.exists(os.path.join(configure.APP_MAIN_FOLDER, 'DCBaseLine_Config_Script.zip')):
+        os.remove(os.path.join(configure.APP_MAIN_FOLDER, 'DCBaseLine_Config_Script.zip'))
+    os.rename(os.path.join(configure.APP_MAIN_FOLDER, 'downloads.zip'),
+              os.path.join(configure.APP_MAIN_FOLDER, 'DCBaseLine_Config_Script.zip'))
+
+    # 生成的脚本列表
+    filelist = ['DCBaseLine_Config_Script.zip']
+    return render_template('success.html', filenames=filelist)
 
 @appserver.route('/dcportal', methods=['POST'])
 def dcportal():

@@ -152,6 +152,36 @@
             </a>
         <!--明细的功能按钮-->
         <div class="row">
+            <!-- DCBaseLine 全部配置数据-->
+            <div class="col-sm-6 col-md-3">
+                <div class="thumbnail">
+                    <img src="../static/DCBaseLineConfigScript.png"
+                         alt="通用的占位符缩略图">
+                    <div class="caption">
+                        <h3>DCBaseline</h3>
+                        <p>Config Script Generate for All</p>
+                       <hr/>
+                        <p>
+                       <form action="DCBaselineConfig" method="post" enctype="multipart/form-data">
+                            <input type="file" multiple="" name="file[]" class="span3" /><br/>
+                            <input type="submit" value="Generate Scripts" class="btn btn-primary" role="button">
+                         <a href="#" class="tooltip-test" data-toggle="tooltip" title="
+                            使用说明:
+                            对DCBaseLine的配置数据一次性生成所有的相关配置脚本，主要是把每个sheet里面的数据插入到对应的数据库表中
+                            输入：
+                                1. XXX_DC_configuration_tables.xlsx
+                                2. 默认每个sheet的名称就是对应的表名，每个sheet的第一行列名就是对应表的列名，不能映射的需要特殊处理
+                                3. 第一个Cover sheet会被排除，其它的动态读取生成
+                            输出：脚本文件，包括下面两项
+                                1. 每个sheet的创建表语句
+                                2. 每个sheet里面数据的insert语句
+                         ">Format?</a>
+                         <a href={{url_for('.static',_external=True, filename='Sample_DC_configuration_tables.xlsx')}} class="tooltip-test" data-toggle="tooltip" title="样例文档">Sample?</a>
+                       </form>
+                        </p>
+                    </div>
+                </div>
+            </div>
             <!--Life Log Script-->
             <div class="col-sm-6 col-md-3">
                 <div class="thumbnail">
