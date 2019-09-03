@@ -13,7 +13,7 @@
 '''
 import pandas as pd
 import os,re
-from app import configure
+from app import configure, public_init_script
 class DCBaselineConfig(object):
     # 初始传入配置的文件名称，默认放在Upload目录下面
     def __init__(self, config_file_name):
@@ -70,7 +70,7 @@ class DCBaselineConfig(object):
         column_name_list = column_name_list[:len(column_name_list)-1]
         insert_sql = insert_sql.format(table_name=table_name,column_name=column_name_list)
         return insert_sql
-    # 给每个列都加上单引号并做SQL的换行处理 TODO
+    # 给每个列都加上单引号并做SQL的换行处理
     def __get_col_values(self,col_value):
         if type(col_value)==type('str'):
             return "'"+self.__sql_adjust(str(col_value))+"',"
@@ -141,6 +141,11 @@ class DCBaselineConfig(object):
     def gen_all_insert_sqls(self):
         all_sheet_names = self.__config_excel_sheet_list.sheet_names
         file_name_list = ''
+        # dcbase line table create script
+        create_table_script = self.gen_create_table_sql()
+        self.__save_script_file('DCBaseline_create_table' + '.sql', create_table_script)
+        file_name_list = file_name_list + 'DCBaseline_create_table' + '.sql' + ','
+
         # 对于每一个sheet都生成列表
         for each_sheet in self.__get_table_name_map():
             each_sheet_sql = self.gen_table_insert_sql(each_sheet)
@@ -148,7 +153,7 @@ class DCBaselineConfig(object):
             # 生成所有脚本的文件列表
             file_name_list = file_name_list+  each_sheet+'.sql' +','
 
-        # 返回文件列表
+        # 返回文件列表，去除最后的逗号,
         file_name_list = file_name_list[0:len(file_name_list)-1]
         return file_name_list
         pass
@@ -161,6 +166,22 @@ class DCBaselineConfig(object):
         for file_name in file_name_list.split(','):
             script_file.write('@@'+ file_name+'\n')
         script_file.close()
+        pass
+    # 生成创建表的脚本，这部分脚本目前是手工维护，需要和excel中字段关联
+    def gen_create_table_sql(self):
+        create_table_sql = ''
+        # Validation table
+        create_table_sql = create_table_sql + public_init_script.init_dc_validation
+        # Reconciliation report create table
+        create_table_sql = create_table_sql + public_init_script.init_dc_reconciliation
+        # DC step check table
+        create_table_sql = create_table_sql + public_init_script.init_dc_dc_step_check
+        # dc_mapping_for_dc_fields create table
+        create_table_sql = create_table_sql + public_init_script.init_dc_mapping_for_dc_fields
+        # source total control table
+        create_table_sql = create_table_sql + public_init_script.init_dc_source_total_control
+
+        return  create_table_sql
         pass
 if __name__ == '__main__':
     dc_config = DCBaselineConfig('XXX_DC_configuration_tables.xlsx')
