@@ -35,10 +35,25 @@ DOWNLOAD_FOLDER = os.path.join(APP_MAIN_FOLDER,'downloads/')
 # 上传文件目录
 UPLOADS_FOLDER = os.path.join(APP_MAIN_FOLDER, 'uploads/')
 
-SQLLDR_FOLDER = os.path.join(DOWNLOAD_FOLDER,'sqlldr/')
+# 生成DC ODI脚本的公共配置目录 2019.9.7
+# template related 脚本
+ODI_FOLDER_TEMPLATE = os.path.join(DOWNLOAD_FOLDER,'allLoadVeriScripts/')
+# 客户提供的dump文件所在的目录
+ODI_FOLDER_DBDUMP = os.path.join(DOWNLOAD_FOLDER,'DBDump/')
+# 【DCBaseLine_Config_Script】
+ODI_FOLDER_DCBASELINE_CONFIG = os.path.join(DOWNLOAD_FOLDER,'DCBaseLine_Config_Script/')
+# Python 报表生成的程序文件
+ODI_FOLDER_Python  = os.path.join(DOWNLOAD_FOLDER,'PythonProgram/')
+# 输入输出的相关文档，主要是报表和template
+ODI_FOLDER_REPORT = os.path.join(DOWNLOAD_FOLDER,'docInputOutput/')
+
+# SQLLDR_FOLDER = os.path.join(DOWNLOAD_FOLDER,'sqlldr/')
+# 统一目录，增加一层子目录 2019.9.7
+SQLLDR_FOLDER = os.path.join(ODI_FOLDER_TEMPLATE,'sqlldr/')
 # SQLLDR_FOLDER = os.path.join(APP_MAIN_FOLDER,'sqlldr/')
 SQLLDR_LOG_FOLDER = os.path.join(SQLLDR_FOLDER,'log/')
 SQLLDR_BAD_FOLDER = os.path.join(SQLLDR_FOLDER,'bad/')
 SQLLDR_CONTROL_FOLDER = os.path.join(SQLLDR_FOLDER,'control/')
 SQLLDR_DATAFILE_FOLDER = os.path.join(SQLLDR_FOLDER,'datafiles/')
 SQLLDR_TEMPLATES_FOLDER = os.path.join(APP_MAIN_FOLDER, 'uploads/')
+

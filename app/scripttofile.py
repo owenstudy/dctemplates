@@ -74,12 +74,12 @@ def generate_all_scripts():
     # 保存创建表语句和公共语句
     scripts_create_tables='spool 00initial_scripts.log\n'+scripts_create_tables
     scripts_create_tables = scripts_create_tables+'\nspool off\n'
-    init_file_name = os.path.join(configure.DOWNLOAD_FOLDER,'00initial_scripts.sql')
+    init_file_name = os.path.join(configure.ODI_FOLDER_TEMPLATE,'00initial_scripts.sql')
     script_handler.save_run_all_scripts(init_file_name,scripts_create_tables)
     # 保存校验表的脚本
     scripts_veri='spool 02veri_scripts.log\n'+scripts_veri
     scripts_veri = scripts_veri+'\nspool off\n'
-    veri_file_name = os.path.join(configure.DOWNLOAD_FOLDER,'02veri_scripts.sql')
+    veri_file_name = os.path.join(configure.ODI_FOLDER_TEMPLATE,'02veri_scripts.sql')
     script_handler.save_run_all_scripts(veri_file_name,scripts_veri)
     # 保存成多个文件 时的执行所有脚本的命令文件
     script_handler.save_run_all_scripts(file_name_exec,run_all_scripts)

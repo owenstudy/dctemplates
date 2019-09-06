@@ -103,15 +103,16 @@ def generatescript():
     try:
         script_options(request)
         generate_all_scripts()
+        odi_script_folder_name = 'ODI_Script.zip'
         # 压缩sqlldr相关的脚本
         zip_dir(configure.DOWNLOAD_FOLDER)
-        if os.path.exists(os.path.join(configure.APP_MAIN_FOLDER, 'allLoadVeriScripts.zip')):
-            os.remove(os.path.join(configure.APP_MAIN_FOLDER, 'allLoadVeriScripts.zip'))
-        os.rename(os.path.join(configure.APP_MAIN_FOLDER,'downloads.zip'),os.path.join(configure.APP_MAIN_FOLDER,'allLoadVeriScripts.zip'))
+        if os.path.exists(os.path.join(configure.APP_MAIN_FOLDER, odi_script_folder_name)):
+            os.remove(os.path.join(configure.APP_MAIN_FOLDER, odi_script_folder_name))
+        os.rename(os.path.join(configure.APP_MAIN_FOLDER,'downloads.zip'),os.path.join(configure.APP_MAIN_FOLDER,odi_script_folder_name))
         # 复制生成的压缩文件到下载目录
 
         # 生成的脚本列表
-        filelist = ['allLoadVeriScripts.zip']
+        filelist = [odi_script_folder_name]
 
         return render_template('success.html', filenames=filelist)
     except Exception as e:

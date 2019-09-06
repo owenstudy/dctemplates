@@ -478,8 +478,14 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
                 # 清险已经生成的所有的文件
                 shutil.rmtree(configure.DOWNLOAD_FOLDER)
                 os.mkdir(configure.DOWNLOAD_FOLDER)
-            sqlldr_win_file_name=os.path.join(configure.DOWNLOAD_FOLDER,'01loadingdata.bat')
-            sqlldr_linux_file_name =os.path.join(configure.DOWNLOAD_FOLDER,'01loadingdata.sh')
+                # 2019.9.7 增加标准的目录结构
+                os.mkdir(configure.ODI_FOLDER_TEMPLATE)
+                os.mkdir(configure.ODI_FOLDER_DBDUMP)
+                os.mkdir(configure.ODI_FOLDER_DCBASELINE_CONFIG)
+                os.mkdir(configure.ODI_FOLDER_Python)
+                os.mkdir(configure.ODI_FOLDER_REPORT)
+            sqlldr_win_file_name=os.path.join(configure.ODI_FOLDER_TEMPLATE,'01loadingdata.bat')
+            sqlldr_linux_file_name =os.path.join(configure.ODI_FOLDER_TEMPLATE,'01loadingdata.sh')
             if os.path.exists(sqlldr_win_file_name):
                 os.remove(sqlldr_win_file_name)
             if os.path.exists(sqlldr_linux_file_name):
@@ -492,7 +498,8 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
         # windows
         nls_lang_format='{0} NLS_LANG={1}\n'
         default_lang='AMERICAN_AMERICA.ZHS16GBK'
-        file_name_format=os.path.join(configure.DOWNLOAD_FOLDER,'01loadingdata.{0}')
+        # 2019.9.7 变更目录结构
+        file_name_format=os.path.join(configure.ODI_FOLDER_TEMPLATE,'01loadingdata.{0}')
         # 创建两个目录存放bad&log
         if os.path.exists(configure.SQLLDR_BAD_FOLDER) is False:
             os.mkdir(configure.SQLLDR_BAD_FOLDER)
@@ -945,7 +952,7 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
                 connectstring = configure.sqlloader_configure.get('connectstring'), sql_file_name = os.path.split(file_name)[1]))
             script_file.close()
     def save_run_for_all_batch(self, file_name_list):
-        script_file=open(os.path.join(configure.DOWNLOAD_FOLDER,'run_for_all.bat'),'w')
+        script_file=open(os.path.join(configure.ODI_FOLDER_TEMPLATE,'run_for_all.bat'),'w')
         # 多个批处理文件一次性执行
         for file_name in file_name_list.split(','):
             script_file.write('call '+ file_name+'\n')
