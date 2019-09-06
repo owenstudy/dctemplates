@@ -13,7 +13,7 @@
 '''
 import pandas as pd
 import os,re
-from app import configure, public_init_script
+from app import configure, public_init_script, common
 class DCBaselineConfig(object):
     # 初始传入配置的文件名称，默认放在Upload目录下面
     def __init__(self, config_file_name):
@@ -183,8 +183,53 @@ class DCBaselineConfig(object):
 
         return  create_table_sql
         pass
+    # 生成一个加载template的特殊过程，替换原来的写法，提高性能 2019.9.6
+    def get_mapping_cols(self):
+        #所有的列名
+        column_title_name=('tableName','columnName','dataType','length','nullable','primaryKey','descShort','descDM','defaultValue','referTable')
+        # 保存所有的行数据
+        mapping_rows=[]
+        all_table_columns = self.__get_column_map()
+        # 获取template列所在的sheet index
+        sheet_name = 'MappingColumns'
+        # 获取sheet的数据
+        pd_sheet = self.__config_excel_sheet_list.parse(sheet_name)
+        # 对sheet中每行进行处理
+        for index, eachrow in pd_sheet.iterrows():
+            # 循环所有 的列
+            each_row_values = {}
+            # 获取所有表的列名
+            # all_table_columns = self.__get_column_map()
+            # 获取当前sheet的列名
+            # sheet_columns = all_table_columns[sheet_name]
+            column_index = 0
+            sheet_columns = self.__config_excel_sheet_list.parse(sheet_name).columns
+            # 初始化每个表的列值
+            each_sheet_column = {}
+            for  eachcol in sheet_columns:
+                col_value = eachrow[eachcol]
+                # 处理空值
+                if pd.isna(col_value):
+                    col_value = ''
+                elif type(col_value)!=type('str'):
+                    col_value = str(col_value)
+                # 使用固定列名，按dict格式保存值
+                each_row_values[column_title_name[column_index]]=col_value
+                column_index = column_index + 1
+                # 只处理前10列的数据，后面的列忽略
+                if column_index>len(column_title_name)-1:
+                    break
+            if len(each_row_values)>0:
+                # 去除文件名的路径信息
+                module_name = os.path.split(self.__config_file_name)[1]
+                each_row_values['moduleName']=module_name
+                cellobj=common.JSONObject(each_row_values)
+                mapping_rows.append(cellobj)
+        return mapping_rows
+
 if __name__ == '__main__':
-    dc_config = DCBaselineConfig('XXX_DC_configuration_tables.xlsx')
+    # dc_config = DCBaselineConfig('XXX_DC_configuration_tables.xlsx')
+    dc_config = DCBaselineConfig('DLA_Mapping_POLICY_V0.1.xlsx')
     # all_table_name = dc_config.__get_column_map()
     # print(all_table_name)
     # insert_sql_template = dc_config.gen_table_insert_sql('dc_step_check')
@@ -192,6 +237,7 @@ if __name__ == '__main__':
     # all_insert_sql = dc_config.gen_table_insert_sql('dc_step_check')
     # print(all_insert_sql)
     # all_sheet_sql = dc_config.gen_all_insert_sqls()
-    dc_config.save_all_sqls()
+    # dc_config.save_all_sqls()
     # print(all_sheet_sql)
+    dc_config.get_mapping_cols()
     pass

@@ -8,7 +8,7 @@ from openpyxl import load_workbook
 from numpy import nan
 from app import public_init_script, configure
 
-from app import common
+from app import common, dcbaseline_config_load
 import numba, numpy as np, pandas as pd
 
 '''从excel加载template'''
@@ -39,7 +39,7 @@ class Template(object):
 
     @numba.jit()
     # 读取excel columns中的字段信息，放到json对象中
-    def get_mapping_cols(self):
+    def get_mapping_cols_bk(self):
         mapping_columns_sheet=self.__get_mapping_cols_sheet(self.excel_handler)
 
         # Template Table Name	Column Name	Data Type	Length	Nullable	Key	Short Description	Descirption of Data Migration	Default Value	Reference Table
@@ -70,7 +70,12 @@ class Template(object):
                 cellobj=common.JSONObject(cell_value)
                 mapping_rows.append(cellobj)
         return mapping_rows
-
+    # 使用pandas的读取方法，来生成列的数据信息，提高性能2019.9.6
+    def get_mapping_cols(self):
+        mapping_template = dcbaseline_config_load.DCBaselineConfig(self.__file_name)
+        mapping_rows = mapping_template.get_mapping_cols()
+        return mapping_rows
+        pass
 class DCDocConfigExcel(object):
     # 初始化数据文件到object
     def __init__(self,file_name,ignore_strike_row=True):
