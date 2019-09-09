@@ -24,7 +24,10 @@ create_table_configure = {"real_data_type": False, "table_prefix":"",  "addition
 script_public_configure = {'os':'win'}
 # new project 初始化脚本参数
 new_project_init_config = {"project_abbr":"", "ls_gs":"LS,GS", "work_repo_list":""}
-
+# 生成 dc reports  参数 
+script_dc_report_generate = {"dbstring":"dla_ls_src/dla_ls_src@c1815u1","io_sql_result":"../docInputOutput/dc_overall_reports.xlsx"}
+# 生成 dbdump  参数 
+script_dbdump_generate = {"project_data_server":"c1815u1","project_src":"dla_ls_src"}
 import os
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 print(BASE_DIR)
@@ -34,30 +37,11 @@ APP_MAIN_FOLDER = BASE_DIR
 DOWNLOAD_FOLDER = os.path.join(APP_MAIN_FOLDER,'downloads/')
 # 上传文件目录
 UPLOADS_FOLDER = os.path.join(APP_MAIN_FOLDER, 'uploads/')
-#  静态文件目录
-STATIC_FOLDER = os.path.join(APP_MAIN_FOLDER, 'static/')
 
-# 生成DC ODI脚本的公共配置目录 2019.9.7
-# template related 脚本
-ODI_FOLDER_TEMPLATE = os.path.join(DOWNLOAD_FOLDER,'allLoadVeriScripts/')
-# 客户提供的dump文件所在的目录
-ODI_FOLDER_DBDUMP = os.path.join(DOWNLOAD_FOLDER,'DBDump/')
-# 【DCBaseLine_Config_Script】
-ODI_FOLDER_DCBASELINE_CONFIG = os.path.join(DOWNLOAD_FOLDER,'DCBaseLine_Config_Script/')
-# Python 报表生成的程序文件
-ODI_FOLDER_Python  = os.path.join(DOWNLOAD_FOLDER,'PythonProgram/')
-# 下载的python静态文件名称列表
-ODI_Python_FILE_LIST = ['dbdump.py','dc_overall_reports.py','configure.py']
-# 输入输出的相关文档，主要是报表和template
-ODI_FOLDER_REPORT = os.path.join(DOWNLOAD_FOLDER,'docInputOutput/')
-
-# SQLLDR_FOLDER = os.path.join(DOWNLOAD_FOLDER,'sqlldr/')
-# 统一目录，增加一层子目录 2019.9.7
-SQLLDR_FOLDER = os.path.join(ODI_FOLDER_TEMPLATE,'sqlldr/')
+SQLLDR_FOLDER = os.path.join(DOWNLOAD_FOLDER,'sqlldr/')
 # SQLLDR_FOLDER = os.path.join(APP_MAIN_FOLDER,'sqlldr/')
 SQLLDR_LOG_FOLDER = os.path.join(SQLLDR_FOLDER,'log/')
 SQLLDR_BAD_FOLDER = os.path.join(SQLLDR_FOLDER,'bad/')
 SQLLDR_CONTROL_FOLDER = os.path.join(SQLLDR_FOLDER,'control/')
 SQLLDR_DATAFILE_FOLDER = os.path.join(SQLLDR_FOLDER,'datafiles/')
 SQLLDR_TEMPLATES_FOLDER = os.path.join(APP_MAIN_FOLDER, 'uploads/')
-

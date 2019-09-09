@@ -483,6 +483,9 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
                 os.mkdir(configure.ODI_FOLDER_DBDUMP)
                 os.mkdir(configure.ODI_FOLDER_DCBASELINE_CONFIG)
                 os.mkdir(configure.ODI_FOLDER_Python)
+                # 复制python文件到python目录生成报表和创建用户使用 2019.9.9
+                for filename in configure.ODI_Python_FILE_LIST:
+                    shutil.copyfile(os.path.join(configure.STATIC_FOLDER,filename),configure.ODI_FOLDER_Python)
                 os.mkdir(configure.ODI_FOLDER_REPORT)
             sqlldr_win_file_name=os.path.join(configure.ODI_FOLDER_TEMPLATE,'01loadingdata.bat')
             sqlldr_linux_file_name =os.path.join(configure.ODI_FOLDER_TEMPLATE,'01loadingdata.sh')
