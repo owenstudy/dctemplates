@@ -3,7 +3,7 @@
 
 __author__ = 'Owen_Study/owen_study@126.com'
 
-import re,os, shutil
+import re,os, shutil, json
 from  app import template, configure, public_init_script
 
 ''' 传入mapping column list列表'''
@@ -46,8 +46,11 @@ class TemplateScript(object):
 
     '''创建校验数据的结果表'''
     def create_veri_result_table(self):
-        create_table_script="""
-        drop table dm_template_veri;
+        # 增加一个删除函数和一个保存表结构的表 dc_table_struncture 2019.9.10,这个删除函数需要第一个执行，因为其它drop表都会调用这个函数
+        public_function_script = public_init_script.init_drop_table_func + public_init_script.init_dc_table_structure
+
+        create_table_script= public_function_script + """
+        exec DC_P_DROP_TABLE('dm_template_veri');
         create table dm_template_veri(module_name varchar2(100), table_name varchar2(100),
         column_name varchar2(100),veri_code varchar2(100),veri_result number,veri_sql varchar2(4000));\n
         """
@@ -156,7 +159,6 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
             End;\n
             /
         """
-
         return public_function_script
     '''
         2019.6.26 增加同时生成真实的数据类型的列表，即使是虚拟类型的选项也同时生成DM开头的真实数据结构列表
@@ -223,7 +225,7 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
         all_table_script=''
         for table_name in self.__table_list:
             newtable_name = configure.create_table_configure.get('table_prefix')+table_name
-            script='drop table '+newtable_name+';\n'
+            script="exec DC_P_DROP_TABLE('"+newtable_name+"');\n"
             script=script+'create table '+newtable_name +'(\n'
             pk_column_list = ''
             # 有引用DM表外键的字段列表
@@ -284,7 +286,7 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
                         # 补充PK值
                         script = script + col_str
                         # 生成FK定义语句 2019.8.30
-                        fk_def_sql = fk_def_sql + self.__get_fk_def_sql(row.moduleName,newtable_name,row.columnName,row.referTable)
+                        # fk_def_sql = fk_def_sql + self.__get_fk_def_sql(row.moduleName,newtable_name,row.columnName,row.referTable)
                     except Exception as e:
                         print('创建Template表时出现错误： '+str(e))
                     script=script+',\n'
@@ -346,7 +348,7 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
         all_table_script=''
         for table_name in self.__table_list:
             newtable_name = configure.create_table_configure.get('table_prefix')+table_name
-            script='drop table '+newtable_name+';\n'
+            script="exec DC_P_DROP_TABLE('"+newtable_name+"');\n"
             script=script+'create table '+newtable_name +'(\n'
             pk_column_list = ''
             # 有引用DM表外键的字段列表
@@ -383,7 +385,8 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
                         # script = script + ' varchar2(%d) %s'%(col_len,primary_key)
                         script = script + ' varchar2(%d) ' % (col_len)
                         # 生成FK定义语句 2019.8.30
-                        fk_def_sql = fk_def_sql + self.__get_fk_def_sql(row.moduleName,newtable_name,row.columnName,row.referTable)
+                        # 由于FK表删除有问题，目前不需要生成2019.9.10
+                        # fk_def_sql = fk_def_sql + self.__get_fk_def_sql(row.moduleName,newtable_name,row.columnName,row.referTable)
                     except Exception as e:
                         print('创建Template表时出现错误： '+str(e))
                     script=script+',\n'
@@ -423,6 +426,30 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
             all_table_script = all_table_script + fk_comments + fk_def_sql
         return all_table_script
         pass
+    # 生成template表结构到dc_table_structure 2019.9.10
+    def __save_template_structure(self):
+        insert_dc_table_structure = ''
+        column_value = "'{value}',"
+        for row in self.__mapping_column_list:
+            column_values=''
+            # dc_table_structure(TABLE_NAME, COLUMN_NAME, DATA_TYPE, LENGTH, NULLABLE, IS_KEY, SHORT_DESC, MIGRATION_DESC,
+            #                    DEFAULT_VALUE, REFER_TABLE, REFER_COLUMN)
+            # for column_name in configure.template_column_title_name:
+                # 获取每一列的值，拉成一个字符串供插入使用
+            column_values = "'"+row.tableName+"','"+row.columnName+"','"+row.dataType+"','"+row.length+"','"+row.nullable+"','"+row.primaryKey \
+                            + "','" + row.descShort + "','" + row.descDM + "','" + row.defaultValue
+            # 引用表中没有.，直接使用refer table字段，引用列为空
+            if len(row.referTable.split('.'))==0 and row.referTable!='':
+                pk_column_name = self.__get_pk_column_name(row.referTable)
+                column_values =column_values + "','" + row.referTable+ "','" +pk_column_name+"'"
+            # 有参考表并且表名和字段名是分开的
+            elif len(row.referTable.split('.'))==2:
+                column_values = column_values+ "','" +row.referTable.split('.')[0]+ "','" + row.referTable.split('.')[1]+"'"
+            else:
+                column_values = column_values + "','" + "" + "','" + "" +"'"
+            # 每一行的记录生成一个insert语句
+            insert_dc_table_structure = insert_dc_table_structure + public_init_script.init_dc_table_structure_insert.format(column_values = column_values)
+        return insert_dc_table_structure
 
     '''生成每个表的控件文件，每个表生成一个单独的文件'''
     ''' control file sample
@@ -483,9 +510,17 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
                 os.mkdir(configure.ODI_FOLDER_DBDUMP)
                 os.mkdir(configure.ODI_FOLDER_DCBASELINE_CONFIG)
                 os.mkdir(configure.ODI_FOLDER_Python)
+                os.mkdir(configure.ODI_FOLDER_REPORT)
                 # 复制python文件到python目录生成报表和创建用户使用 2019.9.9
                 for filename in configure.ODI_Python_FILE_LIST:
-                    shutil.copyfile(os.path.join(configure.STATIC_FOLDER,filename),configure.ODI_FOLDER_Python)
+                    shutil.copyfile(os.path.join(configure.STATIC_FOLDER,filename),os.path.join(configure.ODI_FOLDER_Python,filename))
+                # 复制 docInputOutput目录下面的默认文件
+                for filename in configure.ODI_REPORT_FILE_LIST:
+                    shutil.copyfile(os.path.join(configure.STATIC_FOLDER,filename),os.path.join(configure.ODI_FOLDER_REPORT,filename))
+                # 复制 DBDUMP目录下面的默认文件
+                for filename in configure.ODI_DBDUMP_FILE_LIST:
+                    shutil.copyfile(os.path.join(configure.STATIC_FOLDER,filename),os.path.join(configure.ODI_FOLDER_DBDUMP,filename))
+
                 os.mkdir(configure.ODI_FOLDER_REPORT)
             sqlldr_win_file_name=os.path.join(configure.ODI_FOLDER_TEMPLATE,'01loadingdata.bat')
             sqlldr_linux_file_name =os.path.join(configure.ODI_FOLDER_TEMPLATE,'01loadingdata.sh')
@@ -868,11 +903,12 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
 
     '''生成公共函数的脚本'''
     def save_public_script(self, file_name):
-        script_file = open(file_name, 'w')
+        script_file = open(file_name, 'w',encoding='utf-8')
         # 创建保存校验结果的表
         create_table_script_result = self.create_veri_result_table()
         # 创建校验过程中用到的一些函数
         public_function_script = self.public_function()
+
         # 保存到文件
         script_file.write(create_table_script_result)
         script_file.write(public_function_script)
@@ -883,9 +919,11 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
     def save_template_create_script(self,file_name):
         # 这个参数不再需要，直接从参数中读取
         need_data_type = configure.create_table_configure.get('real_data_type')
-        script_file=open(file_name,'w')
+        script_file=open(file_name,'w',encoding='utf-8')
         filenameonly = file_name.split('/')[-1]
+        # 写入一些公共的运行配置参数
         script_file.write("spool {0}.log\n".format(filenameonly))
+        script_file.write(configure.log_file_set_start)
         # Template表的创建脚本
         # 2019.6.26 调整生成s_开头的一套脚本，s_开头的非真正数据类型+DM开头的有数据类型的脚本，作为DC的标准脚本
         dm_script_split= '\n------*** DM real data type structure to be generate automatically to follow data migration standard ***------\n'
@@ -915,7 +953,10 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
                 # 针对没有前缀只生成DM的真正的表结构，防止重复生成
                 create_table_script_template = self.__create_template_script_datatype()
 
+        # 把表结构保存到表里面dc_table_structure 2019.9.10
+        create_table_script_template = create_table_script_template + self.__save_template_structure()
         script_file.write(create_table_script_template)
+        script_file.write(configure.log_file_set_end)
         script_file.write("\nspool off")
         script_file.write("\n quit; ")
         script_file.close()
@@ -923,13 +964,16 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
         pass
     '''把创建表脚本写入文件'''
     def save_template_veri_script(self,file_name):
-        script_file=open(file_name,'w')
+        script_file=open(file_name,'w',encoding='utf-8')
         filenameonly = file_name.split('/')[-1]
         script_file.write("spool {0}.log\n".format(filenameonly))
+        # 写入一些公共的运行配置参数
+        script_file.write(configure.log_file_set_start)
         # 校验脚本
         veri_script=self.gen_veri_template_script()
 
         script_file.write(veri_script)
+        script_file.write(configure.log_file_set_end)
         script_file.write("\nspool off")
         script_file.write("\n quit; ")
         script_file.close()
@@ -938,7 +982,7 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
         pass
     ''' 创建执行所有脚本的文件'''
     def save_run_all_scripts(self,file_name,run_scripts):
-        script_file=open(file_name,'w')
+        script_file=open(file_name,'w',encoding='utf-8')
         script_file.write(run_scripts)
         script_file.write('\nquit;')
         script_file.close()
@@ -948,14 +992,14 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
             bat_file_path = os.path.split(file_name)[0]
             bat_file_name = os.path.split(file_name)[1]
             bat_file_name = bat_file_name.split('.')[0]+'.bat'
-            script_file = open(os.path.join(bat_file_path,bat_file_name), 'w')
+            script_file = open(os.path.join(bat_file_path,bat_file_name), 'w',encoding='utf-8')
             # 每一个运行的SQL文件生成一个批处理命令
             script_file.write('sqlplus {user_name}/{password}@{connectstring} @{sql_file_name}'.format(\
                 user_name = configure.sqlloader_configure.get('src_user_name'), password = configure.sqlloader_configure.get('src_user_pwd'),\
                 connectstring = configure.sqlloader_configure.get('connectstring'), sql_file_name = os.path.split(file_name)[1]))
             script_file.close()
     def save_run_for_all_batch(self, file_name_list):
-        script_file=open(os.path.join(configure.ODI_FOLDER_TEMPLATE,'run_for_all.bat'),'w')
+        script_file=open(os.path.join(configure.ODI_FOLDER_TEMPLATE,'run_for_all.bat'),'w',encoding='utf-8')
         # 多个批处理文件一次性执行
         for file_name in file_name_list.split(','):
             script_file.write('call '+ file_name+'\n')

@@ -3,10 +3,14 @@ import cx_Oracle
 import pandas as pd
 import configure
 class DcReportsGenerate:
+    """
+    类说明：
+	 将配置文档的sql执行结果写入到配置文档中
+    """
     def __init__(self,dbstring,io_sql_result):
         self.__exp2 = []
         self.dbstring = dbstring
-        self.io_sql_result = io_sql_result
+        self.io_sql_result = configure.DOCINPUTOUTPUT_FOLDER + io_sql_result
     def db_con(self):
         return cx_Oracle.connect(self.dbstring)
     #遍历excel里面的sql
@@ -44,6 +48,6 @@ class DcReportsGenerate:
 
 if __name__=='__main__':
     dbstring =  configure.script_dc_report_generate['dbstring']
-    io_sql_result = configure.script_dc_report_generate['io_sql_result']
-    dc1 = DcReportsGenerate(dbstring,io_sql_result)
+    dc_overall_reports_file = configure.script_dc_report_generate['dc_overall_reports_file']
+    dc1 = DcReportsGenerate(dbstring,dc_overall_reports_file)
     dc1.queryout_sql()

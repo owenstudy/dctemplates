@@ -23,7 +23,7 @@ class DCBaselineConfig(object):
         # sheet中第一行的列名和表字段名的对照关系，默认为和列名相同
         self.__column_name_map = {}
         # 加载excel 数据到pandas中
-        self.__config_excel_sheet_list = pd.ExcelFile(self.__config_file_name)
+        self.__config_excel_sheet_list = pd.ExcelFile(self.__config_file_name,na_values='',encoding='utf-8')
 
     # 获取sheetname和表名的映射关系
     def __get_table_name_map(self):
@@ -186,7 +186,8 @@ class DCBaselineConfig(object):
     # 生成一个加载template的特殊过程，替换原来的写法，提高性能 2019.9.6
     def get_mapping_cols(self):
         #所有的列名
-        column_title_name=('tableName','columnName','dataType','length','nullable','primaryKey','descShort','descDM','defaultValue','referTable')
+        column_title_name = configure.template_column_title_name
+        # column_title_name=('tableName','columnName','dataType','length','nullable','primaryKey','descShort','descDM','defaultValue','referTable')
         # 保存所有的行数据
         mapping_rows=[]
         all_table_columns = self.__get_column_map()
@@ -207,7 +208,13 @@ class DCBaselineConfig(object):
             # 初始化每个表的列值
             each_sheet_column = {}
             for  eachcol in sheet_columns:
-                col_value = eachrow[eachcol]
+                if eachcol == 'Nullable' and pd.isna(eachrow[eachcol]):
+                    # pandas处理NULL这个字符串有问题，会加载不进来，在这里特殊进行处理 2019.9.10
+                    col_value = 'NULL'
+                else:
+                    col_value = self.__sql_adjust(eachrow[eachcol])
+                    # TODO 部分中文的处理还有些问题，生成的INSERT语句有报错，需要后续处理
+                    # col_value = bytes(col_value,encoding='utf-8').decode()
                 # 处理空值
                 if pd.isna(col_value):
                     col_value = ''

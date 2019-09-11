@@ -176,5 +176,70 @@ reconciliation_file_name = 'reconciliation_report.sql'
 # Trigger生成的脚本文件名字
 trigger_file_name = 'trigger_verification.sql'
 
+# 公共处理函数，以方便其它过程进行调用 2019.9.10
+init_drop_table_func = """
+CREATE OR REPLACE FUNCTION DC_F_TABLE_EXIST(I_TABLE_NAME VARCHAR2)
+  RETURN VARCHAR2 IS
+  /* --Y:EXISTS  N:NOT EXISTS */
+  V_NUM   INTEGER;
+  V_EXIST VARCHAR2(1);
+BEGIN
+  SELECT COUNT(1)
+    INTO V_NUM
+    FROM USER_TABLES
+   WHERE TABLE_NAME = UPPER(I_TABLE_NAME);
+  IF V_NUM = 0 THEN
+    V_EXIST := 'N';
+  ELSE
+    V_EXIST := 'Y';
+  END IF;
+  RETURN(V_EXIST);
+END DC_F_TABLE_EXIST;
+/
+CREATE OR REPLACE PROCEDURE DC_P_DROP_TABLE(I_TABLE_NAME IN VARCHAR2) IS
+BEGIN
+  IF DC_F_TABLE_EXIST(I_TABLE_NAME) = 'Y' THEN
+    EXECUTE IMMEDIATE 'DROP TABLE ' || I_TABLE_NAME || ' PURGE';
+  END IF;
+END DC_P_DROP_TABLE;
+/
+\n
+"""
+# 处理template数据保存到临时表，生成sql语句 2019.9.10
+init_dc_table_structure="""
+exec DC_P_DROP_TABLE('dc_table_structure');
+
+create table dc_table_structure
+(
+  table_name varchar2(30) not null,
+  column_name varchar2(30) not null,
+  data_type varchar2(30) not null,
+  length varchar2(30) , 
+  nullable varchar2(8) not null, 
+  is_key varchar2(1) , 
+  short_desc varchar2(2000) ,
+  migration_desc varchar2(2000) ,
+  default_value varchar2(200) ,
+  refer_table varchar2(80) ,
+  refer_column varchar2(30) 
+) nologging;
+alter table dc_table_structure add primary key (table_name, column_name);
+comment on column dc_table_structure.data_type is '字段类型，分为：VARCHAR2/DATE/NUMBER';
+comment on column dc_table_structure.length is '字段长度，当字段类型为VARCHAR2/NUMBER时必须有值，为DATE时放null';
+comment on column dc_table_structure.nullable is '是否可以为空，两种值："NULL"/"NOT NULL"';
+comment on column dc_table_structure.is_key is '是否为主键：是设为"Y"，不是设为null';
+comment on column dc_table_structure.short_desc is '字段的基本说明';
+comment on column dc_table_structure.migration_desc is '针对数据迁移的补充说明';
+comment on column dc_table_structure.default_value is '缺省值';
+comment on column dc_table_structure.refer_table is '外键表';
+comment on column dc_table_structure.refer_column is '外键字段';
+\n
+"""
+# 保存表结构的数据
+init_dc_table_structure_insert = """
+insert into dc_table_structure(TABLE_NAME,COLUMN_NAME,DATA_TYPE,LENGTH,NULLABLE,IS_KEY,SHORT_DESC,MIGRATION_DESC,DEFAULT_VALUE,REFER_TABLE,REFER_COLUMN)
+ select {column_values} from dual;\n
+"""
+
 if __name__ == '__main__':
     pass

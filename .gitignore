@@ -125,9 +125,9 @@ dmypy.json
 
 # guangjun
 *.sql
-*.xlsx
 *.bat
 *.zip
+*.xlsx
 *.txt
 *.bak
 *.json

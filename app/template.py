@@ -44,7 +44,8 @@ class Template(object):
 
         # Template Table Name	Column Name	Data Type	Length	Nullable	Key	Short Description	Descirption of Data Migration	Default Value	Reference Table
         #所有的列名
-        column_title_name=('tableName','columnName','dataType','length','nullable','primaryKey','descShort','descDM','defaultValue','referTable')
+        column_title_name=configure.template_column_title_name
+        # column_title_name=('tableName','columnName','dataType','length','nullable','primaryKey','descShort','descDM','defaultValue','referTable')
         # 循环所有的行
         mapping_rows=[]
         for row in mapping_columns_sheet.rows:
