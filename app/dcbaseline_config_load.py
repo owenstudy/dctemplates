@@ -23,7 +23,7 @@ class DCBaselineConfig(object):
         # sheet中第一行的列名和表字段名的对照关系，默认为和列名相同
         self.__column_name_map = {}
         # 加载excel 数据到pandas中
-        self.__config_excel_sheet_list = pd.ExcelFile(self.__config_file_name,encoding='utf-8')
+        self.__config_excel_sheet_list = pd.ExcelFile(self.__config_file_name)
 
     # 获取sheetname和表名的映射关系
     def __get_table_name_map(self):
