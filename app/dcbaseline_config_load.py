@@ -213,7 +213,7 @@ class DCBaselineConfig(object):
                     col_value = 'NULL'
                 else:
                     col_value = self.__sql_adjust(eachrow[eachcol])
-                    # TODO 部分中文的处理还有些问题，生成的INSERT语句有报错，需要后续处理
+                    # 部分中文的处理还有些问题，生成的INSERT语句有报错，需要后续处理 ，已经搞定，通过生成utf-8格式的脚本文件来解决
                     # col_value = bytes(col_value,encoding='utf-8').decode()
                 # 处理空值
                 if pd.isna(col_value):

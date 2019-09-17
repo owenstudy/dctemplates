@@ -139,25 +139,16 @@ create table dc_step_check
 # DC mapping dc fields
 init_dc_mapping_for_dc_fields = init_sqlplus_para + """
 drop table dc_mapping_for_dc_fields;
-
 create table dc_mapping_for_dc_fields
 (
-dm_table          varchar2(30) not null,
-s_dm_table      varchar2(30) not null,
-table_rule         varchar2(400) ,
-table_rule_detail     varchar2(2000),
-column_name         varchar2(30) not null,
-dm_table_pk           varchar2(1),
-column_rule            varchar2(400) not null,
-column_rule_detail  varchar2(2000)
+dm_table varchar2(30) not null,
+column_name varchar2(30) not null,
+column_rule_detail varchar2(2000) not null
 ) nologging;
 alter table dc_mapping_for_dc_fields add primary key (dm_table, column_name);
-comment on column dc_mapping_for_dc_fields.dm_table_pk  is '如果当前字段是DM表的主键，则为Y；否则为null';
-comment on column dc_mapping_for_dc_fields.column_name  is 'DM表中"DC_"开头的字段名，但并不是所有DC字段都需要在这张表里维护规则';
-comment on column dc_mapping_for_dc_fields.table_rule   is '根据DM表生成来源分3类情况：from_s_dm_only/from_s_dm_and_one_table/from_more_than_2_tables';
-comment on column dc_mapping_for_dc_fields.table_rule_detail  is '对于无法在已有规则中涵盖的，需要在这个字段中写出完整的"from ... where ..."';
-comment on column dc_mapping_for_dc_fields.column_rule  is '需要在这张表里维护的DC字段，只有2类column_rule: sequence/special_rule';
-comment on column dc_mapping_for_dc_fields.column_rule_detail is 'column_rule为"sequence"的，在这个字段中注明sequence name；column_rule为"special_rule"的，在这个字段中写明字段映射规则';
+comment on column dc_mapping_for_dc_fields.column_name is 'DM表中"DC_"开头的字段名，但并不是所有DC字段都需要在这张表里维护规则';
+comment on column dc_mapping_for_dc_fields.column_rule_detail is '填入要设置这个DC字段的sequence名称';
+
 \n
 """
 # DC source total control
