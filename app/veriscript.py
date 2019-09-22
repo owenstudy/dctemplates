@@ -438,16 +438,15 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
                 # 获取每一列的值，拉成一个字符串供插入使用
             column_values = "'"+row.tableName+"','"+row.columnName+"','"+row.dataType+"','"+row.length+"','"+row.nullable+"','"+row.primaryKey \
                             + "','" + row.descShort + "','" + row.descDM + "','" + row.defaultValue
-            # 引用表中没有.，直接使用refer table字段，引用列为空
+            # 引用表中没有（.），直接使用refer table字段，引用列为空
             if len(row.referTable.split('.'))==0 and row.referTable!='':
                 pk_column_name = self.__get_pk_column_name(row.referTable)
-                column_values =column_values + "','" + row.referTable+ "','" +pk_column_name+"'"
+                column_values =column_values + "','" + row.referTable.upper()+ "','" +pk_column_name.upper()+"'"
             # 有参考表并且表名和字段名是分开的
             elif len(row.referTable.split('.'))==2:
-                column_values = column_values+ "','" +row.referTable.split('.')[0]+ "','" + row.referTable.split('.')[1]+"'"
+                column_values = column_values+ "','" +row.referTable.split('.')[0].upper()+ "','" + row.referTable.split('.')[1].upper()+"'"
             else:
                 column_values = column_values + "','" + "" + "','" + "" +"'"
-            column_value = column_value.upper()
             # 每一行的记录生成一个insert语句
             insert_dc_table_structure = insert_dc_table_structure + public_init_script.init_dc_table_structure_insert.format(column_values = column_values)
         return insert_dc_table_structure
