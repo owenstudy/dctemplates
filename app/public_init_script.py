@@ -43,7 +43,7 @@ init_insert_dc_all_tables = """insert into dc_all_tables (table_name,table_categ
 
 # 生成DC校验的表结构，主要是指手工维护的一些逻辑校验
 init_dc_validation = init_sqlplus_para + """
-drop table dc_validation; 
+exec DC_P_DROP_TABLE('dc_validation');
 
 create table dc_validation
 (
@@ -86,7 +86,7 @@ insert into dc_validation (SN,MODULE,IN_PROJECT,PRIORITY,ERROR_CODE,TABLE_NAME,C
 """
 # 生成DCReconciliation report的表结构，主要是指business reconciliation report
 init_dc_reconciliation =  init_sqlplus_para + """
-drop table dc_reconciliation_script; 
+exec DC_P_DROP_TABLE('dc_reconciliation_script');
 
 create table dc_reconciliation_script
 (
@@ -126,7 +126,8 @@ insert into dc_reconciliation_script (BRR_Status,SN,Module,BRR_CODE,BRR_Desc,BRR
 
 # DC STEP check table scl
 init_dc_dc_step_check = init_sqlplus_para + """
-drop table dc_step_check;
+exec DC_P_DROP_TABLE('dc_step_check');
+
 create table dc_step_check
 (step_id  number(5) primary key,
  step_desc varchar2(500) not null,
@@ -138,7 +139,8 @@ create table dc_step_check
 
 # DC mapping dc fields
 init_dc_mapping_for_dc_fields = init_sqlplus_para + """
-drop table dc_mapping_for_dc_fields;
+exec DC_P_DROP_TABLE('dc_mapping_for_dc_fields');
+
 create table dc_mapping_for_dc_fields
 (
 dm_table varchar2(30) not null,
@@ -153,12 +155,30 @@ comment on column dc_mapping_for_dc_fields.column_rule_detail is '填入要设�
 """
 # DC source total control
 init_dc_source_total_control = init_sqlplus_para + """
-drop table dc_source_total_control; 
+exec DC_P_DROP_TABLE('dc_source_total_control');
+
 create table dc_source_total_control
   (table_name varchar2(30) primary key,
    total_number  number(19)   not null
 ) nologging;
 \n
+"""
+# product mapping table
+init_dc_product_mapping = """
+exec DC_P_DROP_TABLE('dc_product_mapping');
+create table dc_product_mapping
+(
+old_product_id varchar2(50) not null,
+more_criteria varchar2(300) ,
+new_product_code varchar2(50) not null,
+new_product_id number(19)
+) nologging;
+alter table dc_product_mapping add primary key (old_product_id, new_product_code);
+comment on column dc_product_mapping.old_product_id is '老产品代码，对应S_DM_CONTRACT_PRODUCT.PRODUCT_ID';
+comment on column dc_product_mapping.more_criteria is '当映射关系为("老产品代码"+额外条件)才能映射到"新产品代码"时使用，Baseline只支持以S_DM_CONTRACT_PRODUCT中的字段为条件，例如填入"s_dm_contract_product.period=3 and s_dm_contract_product.charge_period=4"或者"s_dm_contract_product.charge_period in (1,2,3)"';
+comment on column dc_product_mapping.new_product_code is '新产品代码，对应T_PRODUCT_LIFE.INTERNAL_ID';
+comment on column dc_product_mapping.new_product_id is '新产品ID, 对应T_PRODUCT_LIFE.PRODUCT_ID；配置文档中不用设值，由脚本根据new_product_code自动更新这个字段';
+
 """
 # 公共的文件名称
 # 逻辑校验脚本的文件名称

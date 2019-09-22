@@ -180,6 +180,8 @@ class DCBaselineConfig(object):
         create_table_sql = create_table_sql + public_init_script.init_dc_mapping_for_dc_fields
         # source total control table
         create_table_sql = create_table_sql + public_init_script.init_dc_source_total_control
+        # product mapping table
+        create_table_sql = create_table_sql + public_init_script.init_dc_product_mapping
 
         return  create_table_sql
         pass

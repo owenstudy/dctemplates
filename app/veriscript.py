@@ -447,6 +447,7 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
                 column_values = column_values+ "','" +row.referTable.split('.')[0]+ "','" + row.referTable.split('.')[1]+"'"
             else:
                 column_values = column_values + "','" + "" + "','" + "" +"'"
+            column_value = column_value.upper()
             # 每一行的记录生成一个insert语句
             insert_dc_table_structure = insert_dc_table_structure + public_init_script.init_dc_table_structure_insert.format(column_values = column_values)
         return insert_dc_table_structure
