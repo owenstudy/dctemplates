@@ -10,7 +10,7 @@
 
 import cx_Oracle, os
 from app import configure
-from app import oracleconn
+from app import oracleconn, public_init_script
 #执行查询 语句
 # cursor.execute("select * from tabs")
 #获取一条记录
@@ -33,11 +33,6 @@ class LSLogCheck(object):
         self.conn = oracleconn.oracleconn(user_name,userpwd,connectstring);
         # 公共执行的cursor
         self.cursor = self.conn.cursor()
-        sqlfilename = os.path.join(configure.DOWNLOAD_FOLDER,'05VeriLSLogTable.sql')
-        self.sqlfilehandler = open(sqlfilename,'w')
-        # 写入初始化脚本
-        createtablesql = self.create_veri_result_table()
-        self.sqlfilehandler.write(createtablesql+'\n')
     '''创建校验数据的结果表'''
     def create_veri_result_table(self):
         create_table_script="""
@@ -102,8 +97,18 @@ class LSLogCheck(object):
             self.sqlfilehandler.write(veri_sql)
             print(veri_sql)
     def checkalltables(self):
+        sqlfilename = os.path.join(configure.DOWNLOAD_FOLDER,public_init_script.veri_log_file_name)
+        self.sqlfilehandler = open(sqlfilename,'w')
+        # 写入初始化脚本
+        createtablesql = self.create_veri_result_table()
+        self.sqlfilehandler.write(createtablesql+'\n')
+
         for table_name in self.__table_list:
-            self.check_log(table_name,'')
+            try:
+                self.check_log(table_name,'')
+            except Exception as e:
+                print(e)
+        self.sqlfilehandler.close()
         return True
         pass
 if __name__ == '__main__':

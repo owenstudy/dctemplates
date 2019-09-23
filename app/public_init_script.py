@@ -186,6 +186,8 @@ validation_file_name = 'business_rule_verification.sql'
 reconciliation_file_name = 'reconciliation_report.sql'
 # Trigger生成的脚本文件名字
 trigger_file_name = 'trigger_verification.sql'
+# Veri log table name
+veri_log_file_name = '05VeriLSLogTable.sql'
 
 # 公共处理函数，以方便其它过程进行调用 2019.9.10
 init_drop_table_func = """

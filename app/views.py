@@ -463,9 +463,9 @@ def gen_lslogcheck_script():
     lsscripts = LSLogCheck(user_name=user_name,userpwd=user_pwd,connectstring=connectstring,tablelist=table_list)
     result = lsscripts.checkalltables()
     if result is True:
-        trigger_file_name = public_init_script.trigger_file_name
+        trigger_file_name = public_init_script.veri_log_file_name
         #复制到根目录以方便和其它程序的下载页面共享
-        shutil.copy(os.path.join(configure.DOWNLOAD_FOLDER,public_init_script.trigger_file_name),configure.APP_MAIN_FOLDER)
+        shutil.copy(os.path.join(configure.DOWNLOAD_FOLDER,public_init_script.veri_log_file_name),configure.APP_MAIN_FOLDER)
         # 复制生成的压缩文件到下载目录
 
         # 生成的脚本列表
