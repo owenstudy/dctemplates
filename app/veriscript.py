@@ -521,7 +521,6 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
                 for filename in configure.ODI_DBDUMP_FILE_LIST:
                     shutil.copyfile(os.path.join(configure.STATIC_FOLDER,filename),os.path.join(configure.ODI_FOLDER_DBDUMP,filename))
 
-                os.mkdir(configure.ODI_FOLDER_REPORT)
             sqlldr_win_file_name=os.path.join(configure.ODI_FOLDER_TEMPLATE,'01loadingdata.bat')
             sqlldr_linux_file_name =os.path.join(configure.ODI_FOLDER_TEMPLATE,'01loadingdata.sh')
             if os.path.exists(sqlldr_win_file_name):
@@ -894,7 +893,7 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
         # 2019.7.1 生成统计分析的脚本
         if configure.create_table_configure.get('analyze_schema') is True:
             analyze_script = "---*** Analyze source schema before verification ***---\n"
-            analyze_script = analyze_script+ 'exec dbms_stats.gather_schema_stats('');\n'
+            analyze_script = analyze_script+ "exec dbms_stats.gather_schema_stats('');\n"
             total_veri_sql = analyze_script + total_veri_sql
             pass
 

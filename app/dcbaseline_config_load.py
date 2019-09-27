@@ -134,6 +134,7 @@ class DCBaselineConfig(object):
         sql_file_handler = open(os.path.join(configure.DOWNLOAD_FOLDER,filename),'w',encoding='utf-8')
         sql_file_handler.write("spool {0}.log\n".format(filename.split('.')[0]))
         sql_file_handler.write(insert_sql)
+        sql_file_handler.write("\n commit;")
         sql_file_handler.write("\nspool off")
         # sql_file_handler.write("\nquit; ")
         sql_file_handler.close()
@@ -165,6 +166,8 @@ class DCBaselineConfig(object):
         # 多个批处理文件一次性执行
         for file_name in file_name_list.split(','):
             script_file.write('@@'+ file_name+'\n')
+        script_file.write("\n commit; ")
+        script_file.write("\n quit; ")
         script_file.close()
         pass
     # 生成创建表的脚本，这部分脚本目前是手工维护，需要和excel中字段关联
