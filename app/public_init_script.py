@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # @Time    : 7/1/2019 2:09 PM
-# @Author  : Owen_study
+# @Author  : Owen_studydc_mapping_for_dc_fields
 # @Email   : owen_study@126.com
 # @File    : public_init_script.py
 # @Software: PyCharm Community Edition
@@ -35,6 +35,36 @@ comment on column dc_all_tables.number_of_passed  is '通过业务规则校验�
 comment on column dc_all_tables.number_of_initial  is '用于保存初始的记录数，ODI脚本自动维护';
 comment on column dc_all_tables.from_dataset  is '来源数据集，多数表对应的dataset是table，少数是subquery; SOURCE表的来源数据集为空';
 comment on column dc_all_tables.number_of_dataset  is '来源数据集的记录数，ODI脚本自动维护';
+
+exec DC_P_DROP_TABLE('DC_PATCH_SCRIPT');
+create table dc_patch_script
+(
+  patch_sql   varchar2(4000) not null,
+  rule_type   varchar2(100),
+  sn          number,
+  table_name  varchar2(100),
+  column_name varchar2(100),
+  veri_code   varchar2(100),
+  patch_flag  varchar2(10) not null 
+); 
+comment on column dc_patch_script.rule_type   is 'patch语句针对的规则类型：basic=基本校验；business=业务规则校验';
+comment on column dc_patch_script.sn          is '业务校验规则的编号,如果rule_type为business,则不能为空';
+comment on column dc_patch_script.table_name  is '校验规则的中间表名,如果rule_type为basic,则不能为空';
+comment on column dc_patch_script.column_name is '校验规则的字段名,如果rule_type为basic,则不能为空';
+comment on column dc_patch_script.veri_code   is 'Basic校验中的校验类型,如果rule_type为basic,则不能为空';
+comment on column dc_patch_script.patch_flag  is '是否要执行Patch：Y=是；N=否';
+
+exec DC_P_DROP_TABLE('DC_RUN_PARAMETER');
+create table dc_run_parameter
+(
+  parameter_name   varchar2(100) primary key,
+  para_value       varchar2(100) ,
+  para_desc        varchar2(2000) not null 
+); 
+comment on column dc_run_parameter.parameter_name   is '参数名称';
+comment on column dc_run_parameter.para_value          is '参数值';
+comment on column dc_run_parameter.para_desc         is '参数描述，请对所有允许的参数值都逐一描述清晰';
+
  \n
 """
 # 生成DC_all_tables的insert 语句
@@ -43,28 +73,29 @@ init_insert_dc_all_tables = """insert into dc_all_tables (table_name,table_categ
 
 # 生成DC校验的表结构，主要是指手工维护的一些逻辑校验
 init_dc_validation = init_sqlplus_para + """
-exec DC_P_DROP_TABLE('dc_validation');
 
+exec DC_P_DROP_TABLE('DC_VALIDATION');
 create table dc_validation
 (
-  sn                     number(5) primary key,
-  module             varchar2(100) not null,
-  in_project         varchar2(100) default 'Y' not null,   
-  priority              varchar2(1)     not null,  
+  sn               number(5) primary key,
+  module           varchar2(100) not null,
+  in_project       varchar2(100) default 'Y' not null,   
+  priority         varchar2(1)     not null,  
   error_code       varchar2(100),  
-  table_name      varchar2(500) not null,  
-  column_name  varchar2(500),
-  description       varchar2(4000) not null,
-  sql_for_source varchar2(4000),
+  table_name       varchar2(500) not null,  
+  column_name      varchar2(500),
+  description      varchar2(4000) not null,
+  sql_for_source   varchar2(4000),
   sql_for_target   varchar2(4000),
-  remark              varchar2(4000),   
-  temp_skip         varchar2(10)  default 'N' not null, 
-  rule_from          varchar2(200)  not null,
-  results_source number(19),           
+  remark           varchar2(4000),   
+  temp_skip        varchar2(10)  default 'N' not null, 
+  rule_from        varchar2(200)  not null,
+  add_date         varchar2(10)  not null,
+  results_source   number(19),           
   results_target   number(19),           
   run_duration_source     number(19,2),
   run_duration_target     number(19,2),
-  run_date           date
+  run_date                date
 ) nologging;
 comment on column dc_validation.sn  is '主键序号';
 comment on column dc_validation.in_project  is 'Y(适用当前项目，要执行) / N(不适用于当前项目)';
@@ -76,6 +107,8 @@ comment on column dc_validation.results_source  is '结果为负数表示校验�
 comment on column dc_validation.results_target  is '结果为负数表示校验语句执行报错';
 comment on column dc_validation.run_duration_source  is '源数据检核脚本执行时长';
 comment on column dc_validation.run_date  is '检核规则最近执行日期，不区分source/target';
+comment on column dc_validation.add_date  is '规则的新增及更新日期（日期格式建议使用yyyymmdd以便需要时筛选及排序）';
+
         \n
         """
 init_insert_dc_validation = """
@@ -165,19 +198,21 @@ create table dc_source_total_control
 """
 # product mapping table
 init_dc_product_mapping = """
-exec DC_P_DROP_TABLE('dc_product_mapping');
+exec DC_P_DROP_TABLE('DC_PRODUCT_MAPPING');
 create table dc_product_mapping
 (
-old_product_id varchar2(50) not null,
-more_criteria varchar2(300) ,
-new_product_code varchar2(50) not null,
-new_product_id number(19)
+old_product_id    varchar2(50)  not null, 
+more_criteria     varchar2(300) , 
+new_product_code  varchar2(50)  not null, 
+new_product_id    number(19), 
+config_flag       varchar2(10)  not null
 ) nologging;
 alter table dc_product_mapping add primary key (old_product_id, new_product_code);
-comment on column dc_product_mapping.old_product_id is '老产品代码，对应S_DM_CONTRACT_PRODUCT.PRODUCT_ID';
-comment on column dc_product_mapping.more_criteria is '当映射关系为("老产品代码"+额外条件)才能映射到"新产品代码"时使用，Baseline只支持以S_DM_CONTRACT_PRODUCT中的字段为条件，例如填入"s_dm_contract_product.period=3 and s_dm_contract_product.charge_period=4"或者"s_dm_contract_product.charge_period in (1,2,3)"';
+comment on column dc_product_mapping.old_product_id   is '老产品代码，对应S_DM_CONTRACT_PRODUCT.PRODUCT_ID';
+comment on column dc_product_mapping.more_criteria    is '当映射关系为("老产品代码"+额外条件)才能映射到"新产品代码"时使用，Baseline只支持以S_DM_CONTRACT_PRODUCT中的字段为条件，例如填入"s_dm_contract_product.period=3 and s_dm_contract_product.charge_period=4"或者"s_dm_contract_product.charge_period in (1,2,3)"';
 comment on column dc_product_mapping.new_product_code is '新产品代码，对应T_PRODUCT_LIFE.INTERNAL_ID';
-comment on column dc_product_mapping.new_product_id is '新产品ID, 对应T_PRODUCT_LIFE.PRODUCT_ID；配置文档中不用设值，由脚本根据new_product_code自动更新这个字段';
+comment on column dc_product_mapping.new_product_id   is '新产品ID, 对应T_PRODUCT_LIFE.PRODUCT_ID；配置文档中不用设值，由脚本根据new_product_code自动更新这个字段';
+comment on column dc_product_mapping.config_flag   is '新产品是否已完成产品配置: Y-是; N-否';
 
 """
 # 公共的文件名称

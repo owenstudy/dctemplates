@@ -67,6 +67,59 @@ class ODIMonitor(object):
             time.sleep(interval)
             if self.__ODI_finish is True:
                 break
+    # 监控批处理的运行，如果运行超过固定的时间则发短信进行提醒 TODO
+    # max_batch_duration 多长时间监控一次并发送消息，单位分钟
+    def monitor_first_run_batch(self, max_batch_duration, mobile_list):
+        while(True):
+            # 获取当前执行的batch状态
+            sql_result= self.get_executing_batch_time()
+            if sql_result ==0:
+                time.sleep(60)
+                continue
+            if sql_result['run_minutes']>max_batch_duration:
+                # 发送短信
+                self.send_sms(mobile_list,str(sql_result))
+                print(sql_result)
+                time.sleep(max_batch_duration)
+                # 如果没有正在运行的batch则终止监控
+                if len(sql_result) ==0:
+                    break
+        pass
+    # 获取当前运行的batch的时间和相关信息
+    def get_executing_batch_time(self):
+        pass
+        # sql_list = {"""
+        # Select a.job_id,b.job_name,(sysdate- a.start_time)*24*60 as run_minutes ,a.process_date,c.status_name,a.run_id,a.start_time
+        #     From T_batch_job_run a, t_batch_job b, t_batch_job_status c
+        #     Where a.status=c.status_id and c. status_id=222
+        #     And a.job_id=b.job_id order by c.status_name,a.run_id desc
+        # """}
+        run_sql = """
+        Select a.job_id,b.job_name,round((sysdate- a.start_time)*24*60,0) as run_minutes ,a.process_date,c.status_name,a.run_id,a.start_time
+            From T_batch_job_run a, t_batch_job b, t_batch_job_status c
+            Where a.status=c.status_id and c.status_id=222
+            And a.job_id=b.job_id order by c.status_name,a.run_id desc
+        """
+        sql_result ={}
+
+        self.cursor.execute(run_sql)
+        each_sql_result = self.cursor.fetchall()
+        all_scripts = ''
+        if len(each_sql_result) ==0:
+            return 0
+        for result in each_sql_result:
+            sql_result['job_id'] = result[0]
+            sql_result['job_name'] = result[1]
+            sql_result['run_minutes'] = result[2]
+            sql_result['process_date'] = result[3]
+            sql_result['status_name'] = result[4]
+            sql_result['run_id'] = result[5]
+            sql_result['start_time'] = result[6]
+
+
+        # 增加时间说明
+        sql_result['Time']=self.get_curr_time_str()
+        return sql_result
 
     # 发送短信，输入手机号码，以，分隔的多个手机号码
     def send_sms(self, mobile_list,message):
@@ -137,11 +190,15 @@ class FTPMonitor(object):
         self.__sftp_server.close()
 
 if __name__ == '__main__':
-    # monitor = ODIMonitor('test','test','')
+    monitor = ODIMonitor('tsli','tsli','')
+    # 测试batch monitor
+    # monitor.get_executing_batch_time()
+    monitor.monitor_first_run_batch(5,'1316636647')
+    # monitor.monitor_first_run_batch(3600,'13166366407')
     # monitor.monitor_odi('13166366407,13764850780',3600)
     # result = monitor.monitor_ilp_trans()
     # print(result)
-    ftpmonitor = FTPMonitor('ftp.ebaotech.com','mma_sftp','Og0MQzvY')
-    # ftpmonitor.sftp_download(from_filename='/mma_sftp/DC_DUMP/Sep/exp_ebao_uat_dm20190914.log', to_filepath='D:\\')
-    ftpmonitor.sftp_upload(local_file_name='D:\\exp_ebao_uat_dm20190914_test.log',remote_path='/mma_sftp/DC_DUMP/Sep/')
+    # ftpmonitor = FTPMonitor('ftp.ebaotech.com','mma_sftp','Og0MQzvY')
+    # # ftpmonitor.sftp_download(from_filename='/mma_sftp/DC_DUMP/Sep/exp_ebao_uat_dm20190914.log', to_filepath='D:\\')
+    # ftpmonitor.sftp_upload(local_file_name='D:\\exp_ebao_uat_dm20190914_test.log',remote_path='/mma_sftp/DC_DUMP/Sep/')
     pass
