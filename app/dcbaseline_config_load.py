@@ -101,10 +101,10 @@ class DCBaselineConfig(object):
                     final_sql = final_sql + s + ','
             # 移除最后一个,
             final_sql = final_sql[:len(final_sql)-1]
+            # 截取长度超过4000的字符
+            final_sql = final_sql[:3999]
         else:
             final_sql=sql
-        # 截取长度超过4000的字符
-        final_sql = final_sql[:3999]
         return final_sql
 
     # 处理各个sheet的insert语句
