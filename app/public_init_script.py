@@ -165,6 +165,7 @@ create table dc_source_total_control
   (table_name varchar2(30) primary key,
    total_number  number(19)   not null
 ) nologging;
+
 \n
 """
 # product mapping table
