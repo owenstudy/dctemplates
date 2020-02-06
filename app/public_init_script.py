@@ -214,6 +214,7 @@ comment on column dc_product_mapping.new_product_code is '新产品代码，对�
 comment on column dc_product_mapping.new_product_id   is '新产品ID, 对应T_PRODUCT_LIFE.PRODUCT_ID；配置文档中不用设值，由脚本根据new_product_code自动更新这个字段';
 comment on column dc_product_mapping.config_flag   is '新产品是否已完成产品配置: Y-是; N-否';
 
+
 """
 # 公共的文件名称
 # 逻辑校验脚本的文件名称
