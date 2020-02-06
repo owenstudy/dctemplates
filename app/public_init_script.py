@@ -36,35 +36,6 @@ comment on column dc_all_tables.number_of_initial  is '用于保存初始的记�
 comment on column dc_all_tables.from_dataset  is '来源数据集，多数表对应的dataset是table，少数是subquery; SOURCE表的来源数据集为空';
 comment on column dc_all_tables.number_of_dataset  is '来源数据集的记录数，ODI脚本自动维护';
 
-exec DC_P_DROP_TABLE('DC_PATCH_SCRIPT');
-create table dc_patch_script
-(
-  patch_sql   varchar2(4000) not null,
-  rule_type   varchar2(100),
-  sn          number,
-  table_name  varchar2(100),
-  column_name varchar2(100),
-  veri_code   varchar2(100),
-  patch_flag  varchar2(10) not null 
-); 
-comment on column dc_patch_script.rule_type   is 'patch语句针对的规则类型：basic=基本校验；business=业务规则校验';
-comment on column dc_patch_script.sn          is '业务校验规则的编号,如果rule_type为business,则不能为空';
-comment on column dc_patch_script.table_name  is '校验规则的中间表名,如果rule_type为basic,则不能为空';
-comment on column dc_patch_script.column_name is '校验规则的字段名,如果rule_type为basic,则不能为空';
-comment on column dc_patch_script.veri_code   is 'Basic校验中的校验类型,如果rule_type为basic,则不能为空';
-comment on column dc_patch_script.patch_flag  is '是否要执行Patch：Y=是；N=否';
-
-exec DC_P_DROP_TABLE('DC_RUN_PARAMETER');
-create table dc_run_parameter
-(
-  parameter_name   varchar2(100) primary key,
-  para_value       varchar2(100) ,
-  para_desc        varchar2(2000) not null 
-); 
-comment on column dc_run_parameter.parameter_name   is '参数名称';
-comment on column dc_run_parameter.para_value          is '参数值';
-comment on column dc_run_parameter.para_desc         is '参数描述，请对所有允许的参数值都逐一描述清晰';
-
  \n
 """
 # 生成DC_all_tables的insert 语句
@@ -197,7 +168,7 @@ create table dc_source_total_control
 \n
 """
 # product mapping table
-init_dc_product_mapping = """
+init_dc_product_mapping = init_sqlplus_para + """
 exec DC_P_DROP_TABLE('DC_PRODUCT_MAPPING');
 create table dc_product_mapping
 (
@@ -214,8 +185,48 @@ comment on column dc_product_mapping.new_product_code is '新产品代码，对�
 comment on column dc_product_mapping.new_product_id   is '新产品ID, 对应T_PRODUCT_LIFE.PRODUCT_ID；配置文档中不用设值，由脚本根据new_product_code自动更新这个字段';
 comment on column dc_product_mapping.config_flag   is '新产品是否已完成产品配置: Y-是; N-否';
 
+\n
+"""
+
+# dc patch script table
+init_dc_patch_script = init_sqlplus_para + """
+exec DC_P_DROP_TABLE('DC_PATCH_SCRIPT');
+create table dc_patch_script
+(
+  patch_sql   varchar2(4000) not null,
+  rule_type   varchar2(100),
+  sn          number,
+  table_name  varchar2(100),
+  column_name varchar2(100),
+  veri_code   varchar2(100),
+  patch_flag  varchar2(10) not null 
+); 
+comment on column dc_patch_script.rule_type   is 'patch语句针对的规则类型：basic=基本校验；business=业务规则校验';
+comment on column dc_patch_script.sn          is '业务校验规则的编号,如果rule_type为business,则不能为空';
+comment on column dc_patch_script.table_name  is '校验规则的中间表名,如果rule_type为basic,则不能为空';
+comment on column dc_patch_script.column_name is '校验规则的字段名,如果rule_type为basic,则不能为空';
+comment on column dc_patch_script.veri_code   is 'Basic校验中的校验类型,如果rule_type为basic,则不能为空';
+comment on column dc_patch_script.patch_flag  is '是否要执行Patch：Y=是；N=否';
+
+\n
+"""
+
+# dc run parameter table
+init_dc_run_parameter = """
+exec DC_P_DROP_TABLE('DC_RUN_PARAMETER');
+create table dc_run_parameter
+(
+  parameter_name   varchar2(100) primary key,
+  para_value       varchar2(100) ,
+  para_desc        varchar2(2000) not null 
+); 
+comment on column dc_run_parameter.parameter_name   is '参数名称';
+comment on column dc_run_parameter.para_value          is '参数值';
+comment on column dc_run_parameter.para_desc         is '参数描述，请对所有允许的参数值都逐一描述清晰';
+
 
 """
+
 # 公共的文件名称
 # 逻辑校验脚本的文件名称
 validation_file_name = 'business_rule_verification.sql'

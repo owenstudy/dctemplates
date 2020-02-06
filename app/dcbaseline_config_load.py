@@ -187,7 +187,11 @@ class DCBaselineConfig(object):
         create_table_sql = create_table_sql + public_init_script.init_dc_source_total_control
         # product mapping table
         create_table_sql = create_table_sql + public_init_script.init_dc_product_mapping
-
+        # patch script table
+        create_table_sql = create_table_sql + public_init_script.init_dc_patch_script
+        # run parameter table
+        create_table_sql = create_table_sql + public_init_script.init_dc_run_parameter
+        
         return  create_table_sql
         pass
     # 生成一个加载template的特殊过程，替换原来的写法，提高性能 2019.9.6
