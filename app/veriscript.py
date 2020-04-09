@@ -121,17 +121,17 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
                           exit;
                         end if;*/
                         if errornum = 1 then
-                          V_DATE := To_date (STR_DATE, 'yyyy/mm/dd');
+                          V_DATE := To_date (STR_DATE, 'yyyymmdd');
                           v_result :=0;
                           exit;
                         end if;
                         if errornum = 2 then
-                          V_DATE := To_date (STR_DATE, 'yyyy/mm/dd HH24:MI:ss');
+                          V_DATE := To_date (STR_DATE, 'yyyymmdd HH24:MI:ss');
                           v_result :=0;
                           exit;
                         end if;
                         if errornum = 3 then
-                          V_DATE := To_date (STR_DATE, 'yyyy/mm/dd HH24:MI:ssss');
+                          V_DATE := To_date (STR_DATE, 'yyyymmdd HH24:MI:ssss');
                           v_result :=0;
                           exit;
                         end if;
