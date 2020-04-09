@@ -93,6 +93,7 @@ class TemplateScript(object):
                 End;\n
                 /
         """
+    # 2020.4.9 leo.zhao 调整F_IS_DATE,只校验YYYYMMDD格式
         public_function_script=public_function_script+"""
 CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
                 Return Number
@@ -102,7 +103,7 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
                 errornum integer;
             Begin
                 V_RESULT := 1;
-                errornum := 0;
+                errornum := 1;
                 --处理11:05:47这种是合法的情况
                 if length(STR_DATE)<8 then 
                   v_result :=1;
@@ -112,13 +113,13 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
                   return v_result;
                 end if;
                 
-                for i in 1..6 loop
+                for i in 1..3 loop
                     begin
-                        if errornum = 0 then
+                        /*if errornum = 0 then
                           V_DATE := To_date (STR_DATE, 'mm/dd/yyyy');
                           v_result :=0;
                           exit;
-                        end if;
+                        end if;*/
                         if errornum = 1 then
                           V_DATE := To_date (STR_DATE, 'yyyy/mm/dd');
                           v_result :=0;
@@ -134,7 +135,7 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
                           v_result :=0;
                           exit;
                         end if;
-                        if errornum = 4 then
+                        /*if errornum = 4 then
                           V_DATE := To_date (STR_DATE, 'dd/mm/yyyy');
                           v_result :=0;
                           exit;
@@ -143,7 +144,7 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
                           V_DATE := To_date (STR_DATE, 'dd/mm/yyyy HH24:MI:ss');
                           v_result :=0;
                           exit;
-                        end if;
+                        end if;*/
                      exception
                        when others then
                            errornum :=errornum+1;
@@ -891,11 +892,12 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
             pass
         total_veri_sql= total_veri_sql+'\n commit;\n'
         # 2019.7.1 生成统计分析的脚本
-        if configure.create_table_configure.get('analyze_schema') is True:
-            analyze_script = "---*** Analyze source schema before verification ***---\n"
-            analyze_script = analyze_script+ "exec dbms_stats.gather_schema_stats('');\n"
-            total_veri_sql = analyze_script + total_veri_sql
-            pass
+        # 2020.4.9 leo.zhao 由于多个template会重复生成,因此注释生成统计分析脚本
+        #if configure.create_table_configure.get('analyze_schema') is True:
+        #    analyze_script = "---*** Analyze source schema before verification ***---\n"
+        #    analyze_script = analyze_script+ "exec dbms_stats.gather_schema_stats('');\n"
+        #    total_veri_sql = analyze_script + total_veri_sql
+        #    pass
 
         return total_veri_sql
         pass
