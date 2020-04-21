@@ -34,6 +34,7 @@ class TriggerCheck(object):
         # 执行trigger的脚本列表，每生成一次增加一个，最后汇总生成一个执行脚本
         self.__exec_script_list = []
     # 把生成的脚本保存到文件
+    # 2020.4.21 leo.zhao 注释掉执行trigger的代码
     def save_script_to_file(self):
         try:
             # 写入初始化脚本
@@ -46,8 +47,8 @@ class TriggerCheck(object):
             trigger_scripts = self.gen_trigger_alltables()
             self.sqlfilehandler.write(trigger_scripts+'\n')
             # 执行过程的脚本
-            exec_scripts = self.exec_procedure_script()
-            self.sqlfilehandler.write(exec_scripts+'\n')
+            #exec_scripts = self.exec_procedure_script()
+            #self.sqlfilehandler.write(exec_scripts+'\n')
             # 末尾脚本
             self.sqlfilehandler.write(self.sql_file_foot())
             # 写入完成
@@ -101,7 +102,8 @@ class TriggerCheck(object):
     # 检查一张表的所有TRIGGER并生成脚本返回
     def gen_trigger_bytable(self, table_name):
         # 不用的字段
-        where = "not (trigger_name like '%BD' or trigger_name like '%AUD' or trigger_name like '%REFRESH')"
+        # 2020.4.21 leo.zhao 增加三种trigger不校验，以” _SBIU”结尾的，以” _UPD”结尾的，以” _SAIU”结尾的
+        where = "not (trigger_name like '%BD' or trigger_name like '%AUD' or trigger_name like '%REFRESH' or trigger_name like '%SBIU' or trigger_name like '%UPD' or trigger_name like '%SAIU')"
         sql = "select trigger_name from user_triggers a where a.table_name='{table_name}' and {where}".format(table_name=table_name,where=where)
         self.cursor.execute(sql)
         all_triggers = self.cursor.fetchall()
