@@ -62,6 +62,9 @@ create table dc_validation
   temp_skip        varchar2(10)  default 'N' not null, 
   rule_from        varchar2(200)  not null,
   add_date         varchar2(10)  not null,
+  change_log       varchar2(4000), 
+  prem_calc_related varchar2(1),
+  cause_batch_job_error varchar2(1),  
   results_source   number(19),           
   results_target   number(19),           
   run_duration_source     number(19,2),
@@ -79,7 +82,9 @@ comment on column dc_validation.results_target  is '结果为负数表示校验�
 comment on column dc_validation.run_duration_source  is '源数据检核脚本执行时长';
 comment on column dc_validation.run_date  is '检核规则最近执行日期，不区分source/target';
 comment on column dc_validation.add_date  is '规则的新增及更新日期（日期格式建议使用yyyymmdd以便需要时筛选及排序）';
-
+comment on column dc_validation.change_log is '新增及历次变更的日期/人员信息，以及其它需补充';
+comment on column dc_validation.prem_calc_related is '规则对保费计算的影响: E (导致保费计算报错) / I (导致保费计算结果不正确) / null (未知或与保费计算无关)';
+comment on column dc_validation.cause_batch_job_error is '当前规则是否会导致batch job运行报错：Y（会）；N/null（不会/未知）';
         \n
         """
 init_insert_dc_validation = """
@@ -190,6 +195,7 @@ comment on column dc_product_mapping.config_flag   is '新产品是否已完成�
 """
 
 # dc patch script table
+# 
 init_dc_patch_script = init_sqlplus_para + """
 exec DC_P_DROP_TABLE('DC_PATCH_SCRIPT');
 create table dc_patch_script
@@ -200,7 +206,8 @@ create table dc_patch_script
   table_name  varchar2(100),
   column_name varchar2(100),
   veri_code   varchar2(100),
-  patch_flag  varchar2(10) not null 
+  patch_flag  varchar2(10) not null,
+  order_id    number
 ); 
 comment on column dc_patch_script.rule_type   is 'patch语句针对的规则类型：basic=基本校验；business=业务规则校验';
 comment on column dc_patch_script.sn          is '业务校验规则的编号,如果rule_type为business,则不能为空';
@@ -208,6 +215,7 @@ comment on column dc_patch_script.table_name  is '校验规则的中间表名,�
 comment on column dc_patch_script.column_name is '校验规则的字段名,如果rule_type为basic,则不能为空';
 comment on column dc_patch_script.veri_code   is 'Basic校验中的校验类型,如果rule_type为basic,则不能为空';
 comment on column dc_patch_script.patch_flag  is '是否要执行Patch：Y=是；N=否';
+comment on column dc_patch_script.order_id    is '执行顺序';
 
 \n
 """

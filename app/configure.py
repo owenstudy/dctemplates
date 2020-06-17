@@ -31,12 +31,14 @@ template_column_title_name = (
 
 
 # 设置sql运行log文件的初始化参数和时间信息
+# 2020.4.9 leo.zhao 增加收集统计信息代码exec dbms_stats.gather_schema_stats('');
 log_file_set_start="""
 set feedback on
 set echo on
 set define off
 set sqlblanklines on
 select to_char(sysdate,'YYYY/MM/DD HH:MI:SS') from dual;
+exec dbms_stats.gather_schema_stats('');
 \n
 """
 log_file_set_end = """
