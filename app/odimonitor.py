@@ -22,6 +22,8 @@ class ODIMonitor(object):
         self.cursor = self.conn.cursor()
         #退出标志
         self.__ODI_finish=False
+        # SMS 发送标志
+        self.__SMS_SEND = True
         # 只运行一次nextval 语句的标志
         self.__sequence_run_flag = False
 
@@ -51,6 +53,34 @@ class ODIMonitor(object):
         if sql_result['SEQUENCE_TRANS'] >200000000:
             self.__ODI_finish=True
         return sql_result
+    # 检查trigger的状态
+    def monitor_disabled_trigger(self):
+        sql_list = {'TRIGGER_DISABLE_DTL':"SELECT OWNER,count(*) check_time FROM all_triggers a where status<>'ENABLED' group by a.OWNER"}
+        sql_list_cnt = {'TRIGGER_CNT':"SELECT count(*) check_time FROM all_triggers a where status<>'ENABLED' "}
+        sql_result ={}
+
+        for sql in sql_list_cnt:
+            run_sql = sql_list_cnt[sql]
+            self.cursor.execute(run_sql)
+            each_sql_result = self.cursor.fetchall()
+            all_scripts = ''
+            for result in each_sql_result:
+                check_result = result[0]
+            sql_result[sql]=check_result
+        # 各个owner 用户的trigger disable数量汇总
+        for sql in sql_list:
+            run_sql = sql_list[sql]
+            self.cursor.execute(run_sql)
+            each_sql_result = self.cursor.fetchall()
+            sql_result[sql]=each_sql_result
+        # 增加时间说明
+        sql_result['Time']=self.get_curr_time_str()
+        # 如果有disable 的trigger则记录保存日志并发短信确认
+        if sql_result['TRIGGER_CNT'] >0:
+            self.__SMS_SEND = True
+        else:
+            self.__SMS_SEND = False
+        return sql_result
 
     # 字符串对象，用于打印目的
     def get_curr_time_str(self):
@@ -67,6 +97,16 @@ class ODIMonitor(object):
             time.sleep(interval)
             if self.__ODI_finish is True:
                 break
+    def monitor_trigger(self, mobile_list, interval = 3600):
+        while(True):
+            sql_result= self.monitor_disabled_trigger()
+            time.sleep(interval)
+            if self.__SMS_SEND is True:
+                # 发送短信
+                print(sql_result)
+                # self.send_sms(mobile_list,str(sql_result))
+                self.__SMS_SEND=False
+
     # 监控批处理的运行，如果运行超过固定的时间则发短信进行提醒 TODO
     # max_batch_duration 多长时间监控一次并发送消息，单位分钟
     def monitor_first_run_batch(self, max_batch_duration, mobile_list):
@@ -190,10 +230,19 @@ class FTPMonitor(object):
         self.__sftp_server.close()
 
 if __name__ == '__main__':
-    monitor = ODIMonitor('tsli','tsli','')
+    # monitor = ODIMonitor('mma_tar','mma_tar','172.16.7.189:1524/c189u1')
+    # monitor = ODIMonitor('MMA_LS_TAR','MMA_LS_TAR','172.25.18.15:1521/c1815u1')
+    # monitor.monitor_trigger('13166366407',5)
+    # 监控UT5,DM1,2,3,4,5,6各个环境的trigger
+    monitor = ODIMonitor('mma_ls_stage', 'mma_ls_stage', 'nlsut2_db.mmatst.net/NLSUT2.mmatst.net')
+    monitor.monitor_trigger('13166366407',5)
+    # 监控NLS各个环境的trigger
+    monitor = ODIMonitor('org', 'nls_ORG2020', 'ora02-scan.hkgsite.com/nls.hkgsite.com')
+    monitor.monitor_trigger('13166366407',5)
+
     # 测试batch monitor
     # monitor.get_executing_batch_time()
-    monitor.monitor_first_run_batch(5,'1316636647')
+    # monitor.monitor_first_run_batch(5,'1316636647')
     # monitor.monitor_first_run_batch(3600,'13166366407')
     # monitor.monitor_odi('13166366407,13764850780',3600)
     # result = monitor.monitor_ilp_trans()
