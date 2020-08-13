@@ -121,7 +121,7 @@ class TriggerCheck(object):
         all_scripts = self.cursor.fetchall()
         # 所有的脚本进行处理
         # 生成存储过程的头部
-        procedure_name = 'p_'+trigger_name[4:]
+        procedure_name = 'dc_'+trigger_name[4:]
         # 保存到列表中
         self.__exec_script_list.append(procedure_name)
         local_variable = ''
