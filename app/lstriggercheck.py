@@ -115,6 +115,7 @@ class TriggerCheck(object):
         return all_scripts
         pass
     # 生成一个指定TRIGGER的检查脚本
+    # 20200813 leo change prefix of tigger file name from p_ to dc_
     def gen_trigger_bytrigger(self, trigger_name, table_name):
         sql = "select line,text from user_source a where a.TYPE='TRIGGER' AND A.name='{trigger_name}' order by a.line".format(trigger_name=trigger_name);
         self.cursor.execute(sql)
