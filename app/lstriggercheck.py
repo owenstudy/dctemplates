@@ -115,14 +115,14 @@ class TriggerCheck(object):
         return all_scripts
         pass
     # 生成一个指定TRIGGER的检查脚本
-    # 20200813 leo change prefix of tigger file name from p_ to dc_
+    # 20200813 leo change prefix of tigger file name from p_ to dc_p_
     def gen_trigger_bytrigger(self, trigger_name, table_name):
         sql = "select line,text from user_source a where a.TYPE='TRIGGER' AND A.name='{trigger_name}' order by a.line".format(trigger_name=trigger_name);
         self.cursor.execute(sql)
         all_scripts = self.cursor.fetchall()
         # 所有的脚本进行处理
         # 生成存储过程的头部
-        procedure_name = 'dc_'+trigger_name[4:]
+        procedure_name = 'dc_p_'+trigger_name[4:]
         # 保存到列表中
         self.__exec_script_list.append(procedure_name)
         local_variable = ''
