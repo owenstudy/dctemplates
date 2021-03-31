@@ -63,8 +63,8 @@ create table dc_validation
   rule_from        varchar2(200)  not null,
   add_date         varchar2(10)  not null,
   change_log       varchar2(4000), 
-  prem_calc_related varchar2(1),
-  cause_batch_job_error varchar2(1),  
+  IMPACT_PREMIUM varchar2(1),
+  IMPACT_BATCH_JOB varchar2(1),  
   results_source   number(19),           
   results_target   number(19),           
   run_duration_source     number(19,2),
@@ -83,8 +83,8 @@ comment on column dc_validation.run_duration_source  is '源数据检核脚本�
 comment on column dc_validation.run_date  is '检核规则最近执行日期，不区分source/target';
 comment on column dc_validation.add_date  is '规则的新增及更新日期（日期格式建议使用yyyymmdd以便需要时筛选及排序）';
 comment on column dc_validation.change_log is '新增及历次变更的日期/人员信息，以及其它需补充';
-comment on column dc_validation.prem_calc_related is '规则对保费计算的影响: E (导致保费计算报错) / I (导致保费计算结果不正确) / null (未知或与保费计算无关)';
-comment on column dc_validation.cause_batch_job_error is '当前规则是否会导致batch job运行报错：Y（会）；N/null（不会/未知）';
+comment on column dc_validation.IMPACT_PREMIUM is '规则对保费计算的影响: E (导致保费计算报错) / I (导致保费计算结果不正确) / null (未知或与保费计算无关)';
+comment on column dc_validation.IMPACT_BATCH_JOB is '当前规则是否会导致batch job运行报错：Y（会）；N/null（不会/未知）';
         \n
         """
 init_insert_dc_validation = """
