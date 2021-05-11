@@ -296,9 +296,9 @@ CREATE OR REPLACE Function F_IS_DATE (STR_DATE Varchar2)
             if pk_column_list != '' and configure.create_table_configure.get('real_data_type') is True:
                 # 去除最后一个","
                 pk_column_list = pk_column_list[0:len(pk_column_list)-1]
-                pk_script = 'alter table {table_name} add CONSTRAINT pk_{table_name} PRIMARY KEY ({pk_column_list});\n'
+                pk_script = 'alter table {table_name} add CONSTRAINT pk_{PK_table_name} PRIMARY KEY ({pk_column_list});\n'
                 # 主键脚本
-                pk_script = pk_script.format(table_name=newtable_name[0:26], pk_column_list=pk_column_list)
+                pk_script = pk_script.format(table_name=newtable_name[0:29], PK_table_name=newtable_name[0:26], pk_column_list=pk_column_list)
                 script = script + pk_script
             # 对于没有生成PK的表生成唯一性索引，确保后面的校验语句能够快速运行
             if pk_column_list != '' and configure.create_table_configure.get('real_data_type') is False:
