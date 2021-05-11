@@ -51,29 +51,59 @@ sqlplus /nolog @after_dbdump.sql >after_dbdump.log
   """
 
     # __02_initODI.format( exp_db = ,date= , project_short = ,date )
+    # 20201201 updated by leo , baseline Version, support S_DM_ and DM_ table
         self.__after_dbdump_script = """ 
 conn {src_user_name}/{src_user_name}@{connectstring}
-declare 
-  i number(10);
-begin
-  select count(1)
-    into i
-    from user_tables a
-   where substr(a.table_name, 1, 3) <> 'DM_';
+DECLARE
+  I NUMBER(10);
+  J NUMBER(10);
+BEGIN
+  SELECT COUNT(1)
+    INTO I
+    FROM USER_TABLES A
+   WHERE SUBSTR(A.TABLE_NAME, 1, 5) <> 'S_DM_'
+      AND SUBSTR(A.TABLE_NAME, 1, 3) <> 'DM_';
 
-  /*这个时点环境里的表必须都是"DM_"开头的，否则就报错停下*/
-  if i > 0 then  
-    raise_application_error(-20192,'there is table not beginning with "DM_", please check'); 
-  end if;
+  /*这个时点如果环境里存在非"DM_" or "S_DM_"开头的表，就报错停下*/
+  IF I > 0 THEN
+    RAISE_APPLICATION_ERROR(-20192,
+                            'existing table not begin with "DM_" or "S_DM_", please check');
+  END IF;
 
-  for i_sql in (select 'alter table  ' || a.table_name || ' rename to dmp_' || substr(a.table_name,4) as r_sql
-                  from user_tables a
-                 where substr(a.table_name,1,3) = 'DM_')
-  loop
-    execute immediate i_sql.r_sql;
-  end loop;  
+  SELECT COUNT(1)
+    INTO I
+    FROM USER_TABLES A
+   WHERE SUBSTR(A.TABLE_NAME, 1, 5) = 'S_DM_';
 
-end;
+  SELECT COUNT(1)
+    INTO J
+    FROM USER_TABLES A
+   WHERE SUBSTR(A.TABLE_NAME, 1, 3) = 'DM_';
+
+  IF I > 0 AND J > 0 THEN
+    RAISE_APPLICATION_ERROR(-20193,
+                            'existing both "DM_" and "S_DM_" tables, please check');
+  
+  ELSIF I > 0 THEN
+  
+    FOR I_SQL IN (SELECT 'alter table  ' || A.TABLE_NAME ||
+                         ' rename to dmp_' || SUBSTR(A.TABLE_NAME, 6) AS R_SQL
+                    FROM USER_TABLES A
+                   WHERE SUBSTR(A.TABLE_NAME, 1, 5) = 'S_DM_') LOOP
+      EXECUTE IMMEDIATE I_SQL.R_SQL;
+    END LOOP;
+  
+  ELSIF J > 0 THEN
+  
+    FOR I_SQL IN (SELECT 'alter table  ' || A.TABLE_NAME ||
+                         ' rename to dmp_' || SUBSTR(A.TABLE_NAME, 4) AS R_SQL
+                    FROM USER_TABLES A
+                   WHERE SUBSTR(A.TABLE_NAME, 1, 3) = 'DM_') LOOP
+      EXECUTE IMMEDIATE I_SQL.R_SQL;
+    END LOOP;
+  
+  END IF;
+END;
 /
 
 exit;
