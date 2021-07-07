@@ -138,7 +138,7 @@ class DCBaselineConfig(object):
         sql_file_handler.write(insert_sql)
         sql_file_handler.write("\n commit;")
         sql_file_handler.write("\nspool off")
-        # sql_file_handler.write("\nquit; ")
+        sql_file_handler.write("\nquit; ")
         sql_file_handler.close()
     # 生成所有的sheet的语句并保存到文件中
     def gen_all_insert_sqls(self):

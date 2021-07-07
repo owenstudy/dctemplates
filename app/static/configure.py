@@ -18,7 +18,7 @@ script_dbdump_generate = {"connectstring":"c1815u1","src_user_name":"dla_ls_src"
 
 #配基本路径
 import os
-BASE_DIR = 'D:/ODI_Script'
+BASE_DIR = 'D:/Migration_Script'
 DBDUMP_FOLDER = os.path.join(BASE_DIR,'DBDump/')
 DOCINPUTOUTPUT_FOLDER = os.path.join(BASE_DIR,'docInputOutput/')
 

@@ -103,7 +103,7 @@ def generatescript():
     try:
         script_options(request)
         generate_all_scripts()
-        odi_script_folder_name = 'ODI_Script.zip'
+        odi_script_folder_name = 'Migration_Script.zip'
         # 压缩sqlldr相关的脚本
         zip_dir(configure.DOWNLOAD_FOLDER)
         if os.path.exists(os.path.join(configure.APP_MAIN_FOLDER, odi_script_folder_name)):
